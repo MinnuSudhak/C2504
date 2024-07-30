@@ -1,0 +1,215 @@
+1. To find average of two numbers
+
+pseudocode:routine
+  function Average(numb1,num2)
+           avg=(numb1+numb2)/2
+	   return avg
+pseudocode:routine test
+  function TestAverage()
+           input numb1,numb2
+	   avg=Average(numb1,numb2)
+	   print avg
+
+2.To find cube of number
+
+pseudocode:routine
+    function Cube(num)
+            cube=num*num*num
+            return cube
+pseudocode:routine test
+     function TestCube()
+            input num
+            cube=Cube(num)
+            print cube
+         
+
+3.To find square of the number
+
+pseudocode:routine
+   function Square(num)
+            square=num*num
+            return   square
+pseudocode:routine test
+    function TestSquare()
+             input num
+             sq=Square(num)
+	     print sq
+
+4.To swap two numbers
+
+pseudocode:routine
+
+    function SwapNumbers(num1,num2)
+	  temp=num1
+	  num1=num2
+          num2=temp
+          return num1,num2
+
+pseudocode:routine test
+      function TestSwapNumbers()
+            input num1
+            input num2
+            print "before swapping"
+	    print num1
+	    print num2
+	    swap=SwapNumbers(num1,num2)
+	    print "After swapping"
+	    print num1
+            print num2
+
+5.To check number divisible by 3
+
+pseudocode:routine
+function IsDivisible(num)
+	if num % 3==0
+	   return True
+	else
+	   return False
+pseudocode:routine test
+function TestIsDivisible()
+	input num
+	divisible=IsDivisible(num)
+	if divisible
+	   print num + " is divisible by 3"
+	else
+	   print num + " is not divisible by 3"
+
+6.To check whether number is divisble by 27
+
+Pseudocode:routine
+function IsDivisible(num)
+	if num % 27 == 0
+           return True
+	else
+	   return False
+pseudocode:routine test
+function TestIsDivisible()
+	input num
+	divisible=IsDivisible(num)
+	if divisible
+	  print num +" is divisible by 3"
+	else
+	  print num +" is not divisible by 3"
+
+7.To print N natural numbers
+
+pseudocode:routine
+function NaturalNum(num)
+	for i from 1 to num
+	print i
+pseudocode:routine test
+function TestNaturalNum()
+	input num
+	n=NaturalNum(num)
+
+8.To check whether a number is palindrome
+
+pseuodocode:routine
+function IsPalindrome(num)
+	temp=num
+	rev=0
+	while num > 0
+	   remainder = num % 10
+	   rev = rev * 10 + remainder
+	   num = num /10
+        if temp == rev
+		print "palindrome"
+	else
+	        return "not palindrome"
+
+pseudocode:routine test
+function TestIsPalindrome()
+        input num
+         IsPalindrome(num)
+
+9.To check a number is armstrong
+
+pseudocode:routine
+function IsArmstrong(num)
+	temp = num
+	sum = 0
+	Digits=temp.ToString().Length
+	while num > 0
+	  remainder = num %10
+	  power=math.pow(remainder,Digits)
+	  sum = sum + power
+	  num /= 10
+	if temp == sum
+	       return True
+	else
+	       return False
+pseudocode:routine test
+function TestIsArmstrong()
+          input num
+	  result=IsArmstrong(num)
+	  if result
+		print "is armstrong"
+	  else
+	        print "not armstrong"
+
+10.To check whether a number is prime
+
+pseudocode:routine
+function IsPrime(num)
+	if num <= 1
+	    return False
+	for i from 2 to sqrt(num)
+		if num % i == 0
+			return false
+	return True
+pseudocode:routine test
+function TestIsPrime()
+	input num
+	result=IsPrime(num)
+	if result 
+	   print "prime"
+	else 
+	   print "not prime"
+
+11.To check a number is perfect or not
+
+pseudocode:routine
+function IsPerfect(num)
+	temp = num
+	sum=0
+	while i<=num
+		if num % i == 0
+			sum = sum + i
+	if temp = sum
+		return True
+	else
+		return False
+pseudocode:routine test
+function TestIsPerfect()
+	input num
+	result=IsPerfect(num)
+	if result 
+		print " is a perfect number "
+	else
+		print " is not a perfect number"
+
+12.To check a number is even or odd
+
+pseudocode:routine
+function IsEvenOrOdd(num)
+	if num % 2 == 0
+		print "number is even"
+	else
+		print "number is not odd"
+pseudocode:routine test
+function TestIsEvenOrOdd()
+	input num
+	call IsEvenOrOdd(num)
+
+
+
+pseudocode:routine
+function IsLeapYear(num)
+	i=num.ToString.Length
+	while i == 4
+	
+	
+
+	
+	
+
