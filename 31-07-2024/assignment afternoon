@@ -1,0 +1,191 @@
+1.shopping cart
+
+pseudocode:routine
+function TotalCost(shopping<int>, disth<decimal>, disPer<decimal>)
+      <deciaml> Cost = 0
+	FOR each <decimal>itemCost in shoppingCart<decimal>
+            <decimal>Cost = totalCost + itemCost
+       	if Cost > disth
+            discount = totalCost * disPer
+            totalCost = totalCost - discount
+        return totalCost
+pseudocode:test
+function TestTotalCost()
+	shopping=[]<decimal>
+	disth=100<decimal>
+	discountper=.10<decimal>
+	call TotalCost(shopping, disth, disPer)
+	print totalcost
+
+2.simple calculator
+
+pseudo:routine
+function SimpleCalculator(num1<double>,num2<double>)
+    switch choice
+        case 1: // Addition
+            result<double> = num1 + num2
+            print + result<double>
+            break
+
+        case 2: // Subtraction
+            result<double> = num1 - num2
+            print + result<double>
+            break
+
+        case 3: // Multiplication
+            result<double> = num1 * num2
+            print + result<double>
+            break
+
+        case 4: // Division
+            if num2 != 0 
+                result<decimal> = num1 / num2
+                print  + result
+            else
+                print "Error: Division by zero is not allowed."
+           
+            break
+
+        default:
+            print "Invalid choice"
+pseudocode:test
+fuction TestSimpleCalculator()
+    
+    print "1. Addition"
+    print "2. Subtraction"
+    print "3. Multiplication"
+    print "4. Division"
+    input choice
+    input num1<int>
+    input num2<int>
+    call SimpleCalculator(num1<int>,num2<int>)
+    
+
+3.Fizz problem
+
+function FizzBuzz(num)
+
+	if num % 3 = 0 && num % 5 =0
+		print FizzBizz
+	else if num % 3 = 0
+		print Fizz
+	else if num % 5= 0
+		print Buzz
+	else
+		print num
+
+for num from 1 to 100
+	input num
+	call FizzBuzz(num)
+
+4.palindrome program
+    
+input String
+    cleanedString = REMOVE_SPACES(String)
+    reversedString = REVERSE(cleanedString)
+	if cleanedString = reversedString 
+        	print "The string is a palindrome."
+    	else
+        	print "The string is not a palindrome."
+     	end if
+
+
+
+5.largest number in a array
+
+pseudocode:routine
+function FindMaxValue(arr<int[]>)
+        maxValue<int> = arr[0]
+        for i<int> from 1 to length(arr) - 1
+            if arr[i] > maxValue 
+                maxValue = arr[i]
+           return maxValue
+pseudocode:test    
+    function TestFindMaxValue()
+        array<int[]> = []
+	maxValue<int> = FindMaxValue(array<int[]>)
+	print "The maximum value in the array is: " + maxValue
+
+
+
+6.Bank Account
+	balance<decimal> = 0.0
+	function Deposit(amount<decimal>)
+            if amount<decimal> > 0 
+                balance = balance + amount
+                print "Deposit successful " + balance
+            else
+                print "Invalid deposit amount."
+        function Withdraw(amount<decimal>)
+            if amount<decimal> > 0 
+                if amount<decimal> <= balance 
+                    balance = balance - amount
+                    print "Withdrawal successful"
+                else
+                    print "Insufficient balance."
+               
+            else
+                print "Invalid withdrawal amount."
+          function CheckBalance()
+            print "Current balance: " + balance
+      
+
+pseudocode:test
+    function TestBankAccount()
+	balance=0
+	print "1.deposit"
+	print "2.withdraw"
+	print "3.check balance"
+	print "4.exit"
+        input choice
+	switch choice
+	case 1.
+	print "enter amount"
+	if amount<decimal> > 0 
+                balance = balance + amount
+                print "Deposit successful " + balance
+	 else
+                print "Invalid deposit amount."
+	case 2.
+	print "enter amount"
+	 if amount<decimal> > 0 
+                if amount<decimal> <= balance 
+                    balance = balance - amount
+                    print "Withdrawal successful"
+                else
+                    print "Insufficient balance."
+               
+            else
+                print "Invalid withdrawal amount."
+	case 3.
+		 print "Current balance: " + balance
+	
+	call TestBankAccount()
+
+
+7.sum of numbers from 1 to 10
+
+BEGIN
+Initialize sum = 0 as integer
+	FOR i<int> FROM 1 TO 10
+        	sum = sum + i
+    	END FOR
+	print "The sum of the first 10 natural numbers is: " + sum
+END
+ 
+     
+
+
+
+
+   
+    
+
+
+
+
+
+
+   
+	
+	
