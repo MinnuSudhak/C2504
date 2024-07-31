@@ -1,1 +1,163 @@
+1.To print the one is adult based on his/her age
+
+///Dont print if not adult
+
+pseudocode:routine
+
+function IsAdult(age)
+	isAdult = (age >= 18)
+	return isAdult
+pseudocode:routine test
+
+function TestIsAdult()
+	input age
+	if(IsAdult(age))
+		print "you are an adult"
+	end if
+
+
+2.To print he/she is adult or not based on age
+
+pseudocode:routine
+
+function IsAdult(age)
+	isAdult = (age >= 18)
+	return isAdult
+
+pseudocode:routine test
+
+function TestIsAdultNotAdult()
+        Input age 
+        if(IsAdult(age)) 
+            print 'You are an adult.'
+        else 
+            print 'You are not an adult.'
+        end if
+
+3.Input mark,if mark is greater than 40 print pass else fail
+
+pseudocode:routine
+function IsMarkGreaterThan40(mark)
+    return (mark > 40)
+
+function IsMarkGreaterThan40(mark)
+    isMarkGreaterThan40 = (mark > 40)
+    return isMarkGreaterThan40
+
+pseudocode:test routine
+
+function TestIsMarkGreaterThan40()
+    Input mark 
+    if IsMarkGreaterThan40(mark)
+        print "pass" 
+    else 
+        print "fail" 
+pseudocode:test routine
+
+
+4.To check the person is teenageer,adult or child
+
+pseudocode:routine
+function IsAdult(age)
+        isAdult = (age >= 18);
+        return isAdult; 
+    function IsTeenager(age)
+        isTeenager = (age >= 13);
+        return isTeenager; 
+pseudocode:test
+    function TestIsAdultTeenagerOrChild():
+        Input age 
+        if(IsAdult(age)) 
+            print 'You are an adult.'
+        else if(IsTeenager(age)) 
+            print 'You are a teenager.'
+        else
+            print 'You are a child.'
+        end if
+pseudocode:routine test
+
+5.check for car maintenance
+
+pseudocode:routine
+function SuggestMaintenance(serviceOption->char) -> string
+        string suggestion;
+        switch serviceOption
+            case 'O':
+                suggestion = "Change Oil and Replace Oil Filter"
+                break
+            case 'T':
+                suggestion = "Rotate Tire and align them properly"
+                break
+            case 'B':
+                suggestion = "Inspect the brake and replace them if necessary"
+                break
+            case 'A':
+                suggestion = "Battery Check and Replace them"
+                break
+            default: 
+                suggestion = "Some other reason"
+                break 
+        end switch 
+        return suggestion
+pseudocode:routine test
+
+function TestSuggestMaintenance() 
+     Input serviceOption 
+     suggestion = SuggestMaintenance(serviceOption)
+     print suggestion   
+
+6.To print 'number is positive' if num > 0
+       it should not print if not positive 
+
+pseudocode:routine    
+function IsPositive(num)
+        isPositive = (num > 0);
+        return isPositive
+pseudocode:test
+    function TestIsPositive()
+        Input num
+        if(IsPositive(num))
+            print 'Number is positive'   
+
+7. Check tumour 
+                is cancerous if  malignant 
+                or not cancerous if benign
+
+pseudocode:routine
+function IsCancerous(tumour)
+    isCancerous = (tumour == "malignant")
+        return isCancerous
+pseudocode:test
+function TestIsCancerous()
+	input string
+	call IsCancerous(tumour)
+
+8.Input number, check it is positive or negative 
+
+pseudocode:routine
+function IsPositiveOrNegative(num)
+	isPositiveOrNegative = (num > 0);
+        return isPositiveOrNegative
+pseudocode:test
+function IsPositiveOrNegative()
+	Input num
+        	if(IsPositiveOrNegative(num))
+            		print 'Number is positive'
+        	else 
+            		print 'Number is negative'
+
+9. Take a num 10, if num greater than 5
+   print "num as 'greater than 5'"
+
+pseudocode:routine   
+function IsGreater5(num)
+       isGreater = (num > 5);
+       return isGreater;
+pseudocode:test
+   function TestIsGreater5()
+       Input num
+       if(IsGreater5(num))
+           print 'Num greater than 5'
+
+            
 
