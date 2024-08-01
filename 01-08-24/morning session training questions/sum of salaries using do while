@@ -1,7 +1,24 @@
-class  ReadAndFindSumOfDoctorsSalariesTillZerodowhile()
-{
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.NetworkInformation;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
 
-  static void ReadAndFindSumOfDoctorsSalariesTillZero()
+namespace prgm1
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            ReadAndFindSumOfDoctorsSalariesTillZero();
+            Console.WriteLine("Press any key to contine...");
+            Console.ReadKey();
+                
+        }
+
+static void ReadAndFindSumOfDoctorsSalariesTillZero()
   {
     int sum = 0 ;
     do 
@@ -22,13 +39,8 @@ class  ReadAndFindSumOfDoctorsSalariesTillZerodowhile()
       Console.WriteLine($"sum is : {sum}");
   }
 
-
- static void Main(string[] args) 
-    {
-        ReadAndFindSumOfDoctorsSalariesTillZero();
-        Console.WriteLine("Press any key to contine...");
-        Console.ReadKey();
-    }
-    
-    
 }
+
+    
+    
+
