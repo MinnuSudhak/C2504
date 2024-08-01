@@ -1,3 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.NetworkInformation;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace prgm1
+{
+    
 class ReadAndFindSumOfDoctorsSalariesTillZerowhileloop
 {
  static void Main(string[] args) 
@@ -27,12 +38,5 @@ class ReadAndFindSumOfDoctorsSalariesTillZerowhileloop
     }
    Console.WriteLine($"sum is : {sum}");
 }
-
- static void Main(string[] args) 
-    {
-        ReadAndFindSumOfDoctorsSalariesTillZero();
-        Console.WriteLine("Press any key to contine...");
-        Console.ReadKey();
-    }
-    }
- }
+}
+}
