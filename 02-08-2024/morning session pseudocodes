@@ -9,3 +9,221 @@ function TestPrintSeries10_12_14()
     Input numOfTerms
     PrintSeries10_12_14(numOfTerms)
 
+2. print series 10, 12, 14, 16, ... N terms 
+function PrintSeries10_12_14(numOfTerms)
+function TestPrintSeries10_12_14()
+function PrintSeries10_12_14(numOfTerms)
+    term = 10
+    I = 1
+    while  I <= numOfTerms  
+        Print term + ' '
+        term = term + 2
+        I++
+    end while 
+function TestPrintSeries10_12_14()
+    Input numOfTerms
+    PrintSeries10_12_14(numOfTerms)
+
+3. print series 10, 12, 14, 16, ... N terms 
+function PrintSeries10_12_14(numOfTerms)
+    term = 10
+    I = 1;
+    do  
+        if numOfTerms == 0
+            break
+        then   
+        Print term + ' '
+        term = term + 2
+
+        I++
+    end while I <= numOfTerms
+function TestPrintSeries10_12_14()
+    Input numOfTerms
+    PrintSeries10_12_14(numOfTerms)
+
+function PrintSeries10_12_14(numOfTerms)
+    term = 10
+    I = 1;
+    do  
+        if numOfTerms < I
+            break
+        then   
+        Print term + ' '
+        term = term + 2
+
+        I++
+    end while I <= numOfTerms
+    
+function PrintSeries10_12_14(numOfTerms)
+    term = 10
+    I = 1;
+    if numOfTerms > 0
+        do          
+            Print term + ' '
+            term = term + 2
+
+            I++
+        end while I <= numOfTerms
+    then   
+
+4. print the N th term in the series 21, 22, 24, 27, 31, ...
+function GetNthTerm_21_22_24_27(N)    
+    term = 21
+    difference = 1
+    for I = 1; I <= N ; I++   
+        if I == N
+            break
+        end if         
+        
+        term = term + difference
+        difference = difference + 1
+    end for 
+    return term
+function TestGetNthTerm_21_22_24_27()
+    Input N                             
+    nthTerm = GetNthTerm_21_22_24_27(N)
+    Print nthTerm
+
+function GetNthTerm_21_22_24_27(N)    
+    term = 21
+    
+    for I = 1; I <= N ; I++   
+        if I == N
+            break
+        end if         
+        
+        term = term + I 
+       
+    end for 
+    return term
+
+function GetNthTerm_21_22_24_27(N)    
+    term = 21
+    for I = 1; I < N ; I++ //run N-1 times
+        term = term + I        //difference is I only 
+    end for 
+    return term
+
+
+
+term = term + I 
+term += I       
+
+function GetNthTerm_21_22_24_27(N)    
+    term = 21
+    for I = 1; I < N ; I++ 
+        term += I        
+    end for 
+    return term
+
+static int GetNthTerm_21_22_24_27(int N) 
+{
+    int term = 21;  //21 22 24 27 31
+    int difference = 1;//1 2 3 4 5
+    for (int I = 1; I <= N; I++)
+    {
+        if( I == N )
+        {
+            break;
+        }
+        //
+        term = term + difference;
+        difference = difference + 1;
+    }
+    return term;
+}
+
+5. print the N th term in the series 21, 22, 24, 27, 31, ...
+function GetNthTerm_21_22_24_27(N)    
+    term = 21
+    difference = 1
+    I = 1
+    while  I <= N  
+        if I == N
+            break
+        end if         
+        
+        term = term + difference
+        difference = difference + 1
+
+        I++ 
+    end while 
+    return term
+function TestGetNthTerm_21_22_24_27()
+    Input N                             
+    nthTerm = GetNthTerm_21_22_24_27(N)
+    Print nthTerm
+
+6. print the N th term in the series 21, 22, 24, 27, 31, ...
+function GetNthTerm_21_22_24_27(N)    
+    term = 21
+    difference = 1
+    I = 1
+    do  
+        if I == N
+            break
+        end if         
+        
+        term = term + difference
+        difference = difference + 1
+
+        I++ 
+    while  I <= N  
+    return term
+function TestGetNthTerm_21_22_24_27()
+    Input N                             
+    nthTerm = GetNthTerm_21_22_24_27(N)
+    Print nthTerm
+
+7. print the following pattern 
+        1
+      1 2
+    1 2 3
+  1 2 3 4
+1 2 3 4 5 
+
+function PrintNumTriangleMirroredRightAngle(N)
+    for I = 1; I <= N; I++          
+        for J = 1; J <= N-I; J++     
+            Print "  "                 
+        end for 
+        for J = 1; J <= I; J++       
+            Print J + " "           
+        end for 
+        Print NewLine 
+    end for 
+function TestPrintNumTriangleMirroredRightAngle()
+    Input N 
+    PrintNumTriangleMirroredRightAngle(N)
+
+
+function PrintNumTriangleMirroredRightAngle(N)
+    for I = 1; I <= N; I++  //N times = Number of Lines
+        for J = 1; J <= N-I; J++ //Number of Spaces before Number print
+            Print "  " //Two Spaces, No Newline Printing 
+        end for 
+        for J = 1; J <= I; J++ //Number of Numbers is I times
+            Print J + " "      // Print number and space, no new line 
+        end for 
+        Print NewLine 
+    end for 
+function TestPrintNumTriangleMirroredRightAngle()
+    Input N 
+    PrintNumTriangleMirroredRightAngle(N)
+
+
+function PrintNumTriangleMirroredRightAngle(N) = 5
+    for I = 1; I <= N; I++          
+        for J = 1; J <= N-I; J++    
+            Print "  "                 
+        end for 
+        for J = 1; J <= I; J++     
+            Print J + " "               
+        end for 
+        Print NewLine 
+    end for 
+function TestPrintNumTriangleMirroredRightAngle()
+    Input N 
+    PrintNumTriangleMirroredRightAngle(N)
+
+
