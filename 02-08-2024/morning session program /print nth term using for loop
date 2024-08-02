@@ -1,0 +1,48 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace LearnCSharp
+{
+    internal class PrintSeries
+    {
+        static void Main(string[] args) //user: p
+        {
+            Console.WriteLine("--------------TestPrintSeries10_12_14...--------------");
+            TestGetNthTerm_21_22_24_27();
+            Console.WriteLine("--------------End TestPrintSeries10_12_14...--------------");
+            Console.WriteLine("Press any key to contine...");
+            Console.ReadKey();
+        }
+        static int GetNthTerm_21_22_24_27(int N)
+        {
+            int term = 21;
+            int difference = 1;
+            for (int I = 1; I <= N; I++)
+            {
+                if (I == N)
+                {
+                    break;
+                }
+                //
+                term = term + difference;
+                difference = difference + 1;
+            }
+            return term;
+        }
+        static void TestGetNthTerm_21_22_24_27()
+        {
+            Console.Write("Enter number of terms:");
+            int N = int.Parse(Console.ReadLine());
+            int nthTerm = GetNthTerm_21_22_24_27(N);
+            Console.WriteLine($"Nth term is {nthTerm}");
+        }
+    }
+}
+
+    
+
+
+
