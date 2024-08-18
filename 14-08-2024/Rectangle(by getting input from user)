@@ -1,0 +1,68 @@
+
+
+using System;
+public class Rectangle
+{
+    public  int Length{set; get;}
+    public int Breadth{set; get;}
+    public Rectangle(int length,int breadth)
+    {
+        Length=length;
+        Breadth=breadth;
+    }
+    public int Area()
+    {
+        return Length*Breadth;
+    }
+    public bool Greaterthan(Rectangle other)
+    {
+        return Area()>other.Area();
+    }
+    public bool Lessthan(Rectangle other)
+    {
+        return Area()<other.Area();
+    }
+    public bool Equals(Rectangle other)
+    {
+        return Area()==other.Area();
+    }
+    
+    
+}
+class program
+{
+    static void Main(string[] args)
+    {
+        Console.Write("Enter the length and breadth of fst land");
+        Console.Write("Enter the length:");
+        int l=int.Parse(Console.ReadLine());
+        Console.Write("Enter the  breadth ");
+        int b=int.Parse(Console.ReadLine());
+        Rectangle fst=new Rectangle(l,b);
+        Console.Write("Enter the length and breadth of second land");
+        Console.Write("Enter the length:");
+        int l2=int.Parse(Console.ReadLine());
+        Console.Write("Enter the  breadth ");
+        int b2=int.Parse(Console.ReadLine());
+        Rectangle snd=new Rectangle(l2,b2);
+        if(fst.Greaterthan(snd))
+        {
+            Console.WriteLine($"First land is greater than second land");
+            
+        }
+        else if(fst.Lessthan(snd))
+        {
+           Console.WriteLine($"second land is greater than first land");
+        }
+        else if(fst.Equals(snd))
+        {
+            Console.WriteLine($"First land is equal to second land");
+        }
+        else 
+        {
+            Console.WriteLine($"First land is not equal to second land");
+        }
+       
+        
+    }
+}
