@@ -1,0 +1,331 @@
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using log4net;
+
+namespace week4assessment
+{
+    class Allergy
+    {
+        public int AllergyID { get; set; }
+        public string PatientName { get; set; }
+        public string Allergen { get; set; }
+        public int SeverityLevel { get; set; }
+    }
+
+    class Program
+    {
+        private static readonly ILog _log = LogManager.GetLogger("MyLogger");
+        static string connectionString = @"Data Source=(localdb)\ProjectModels; Initial Catalog = Assessment4; Integrated Security = True;";
+
+        static void Main()
+        {
+            _log.Info("Application started");
+
+            while (true)
+            {
+                Console.WriteLine("Menu:");
+                Console.WriteLine("1. Add Patient");
+                Console.WriteLine("2. View Patient Details");
+                Console.WriteLine("3. Most Severe Allergy");
+                Console.WriteLine("4. Second Least Severe Allergy");
+                Console.WriteLine("5. Sort Allergies by Allergen");
+                Console.WriteLine("6. Update Patient Details");
+                Console.WriteLine("7. Delete Patient");
+                Console.WriteLine("8. Exit");
+
+                Console.Write("Enter your choice: ");
+                int choice = int.Parse(Console.ReadLine());
+
+                switch (choice)
+                {
+                    case 1:
+                        AddPatient();
+                        break;
+                    case 2:
+                        ViewPatientDetails();
+                        break;
+                    case 3:
+                        MostSevereAllergy();
+                        break;
+                    case 4:
+                        SecondLeastSevereAllergy();
+                        break;
+                    case 5:
+                        SortAllergiesByAllergen();
+                        break;
+                    case 6:
+                        UpdatePatientDetails();
+                        break;
+                    case 7:
+                        DeletePatient();
+                        break;
+                    case 8:
+                        return;
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        break;
+                }
+            }
+        }
+
+        static void AddPatient()
+        {
+            Console.Write("Enter Allergy Id: ");
+            string allergyId = Console.ReadLine();
+            Console.Write("Enter patient name: ");
+            string patientName = Console.ReadLine();
+            Console.Write("Enter allergen: ");
+            string allergen = Console.ReadLine();
+            Console.Write("Enter severity level: ");
+            int severityLevel = int.Parse(Console.ReadLine());
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                _log.Debug("Connected to database");
+                try
+                {
+                    SqlCommand command = new SqlCommand("INSERT INTO Allergies (AllergyID,PatientName, Allergen, SeverityLevel) VALUES (@AllergyID,@PatientName, @Allergen, @SeverityLevel)", connection);
+                    command.Parameters.AddWithValue("@AllergyID", allergyId);
+                    command.Parameters.AddWithValue("@PatientName", patientName);
+                    command.Parameters.AddWithValue("@Allergen", allergen);
+                    command.Parameters.AddWithValue("@SeverityLevel", severityLevel);
+
+                    int rowsAffected = command.ExecuteNonQuery();
+                    if (rowsAffected > 0)
+                    {
+                        //SqlCommand getIdCommand = new SqlCommand("SELECT SCOPE_IDENTITY() AS NewAllergyID", connection);
+                        //int newAllergyID = (int)getIdCommand.ExecuteScalar();
+                        _log.InfoFormat("Added patient: {0} with allergy {1} and severity level {2}. ", patientName, allergen, severityLevel);
+                    }
+                    else
+                    {
+                        _log.Warn("Failed to add patient: " + patientName);
+                        Console.WriteLine("Failed to add patient: " + patientName);
+                    }
+                }
+                catch (SqlException ex)
+                {
+                    _log.Error("Error inserting patient: " + ex.Message);
+                    Console.WriteLine("Error inserting patient: " + ex.Message);
+                }
+            }
+        }
+
+        //SqlCommand command = new SqlCommand("INSERT INTO Allergies (PatientName, Allergen, SeverityLevel) VALUES (@PatientName, @Allergen, @SeverityLevel); SELECT SCOPE_IDENTITY() AS NewAllergyID", connection);
+        ////command.Parameters.AddWithValue("@AllergyID", Guid.NewGuid());
+        //command.Parameters.AddWithValue("@PatientName", patientName);
+        //command.Parameters.AddWithValue("@Allergen", allergen);
+        //command.Parameters.AddWithValue("@SeverityLevel", severityLevel);
+        ////SqlParameter newAllergyIdParameter = command.Parameters.Add("@NewAllergyID", SqlDbType.Int);
+        ////newAllergyIdParameter.Direction = ParameterDirection.Output;
+
+
+        //int newAllergyID = (int)command.ExecuteScalar();
+        ////int rowsAffected = command.ExecuteNonQuery();
+        ////int allergyId = (int)newAllergyIdParameter.Value;
+        //_log.InfoFormat("Added patient: {0} with allergy {1} and severity level {2}", patientName, allergen, severityLevel);
+    
+     
+
+        static void ViewPatientDetails()
+        {
+            Console.Write("Enter patient ID: ");
+            int patientID = int.Parse(Console.ReadLine());
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                _log.Debug("Connected to database");
+
+                SqlCommand command = new SqlCommand("SELECT * FROM Allergies WHERE AllergyID = @AllergyID", connection);
+                command.Parameters.AddWithValue("@AllergyID", patientID);
+
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    Allergy allergy = new Allergy
+                    {
+                        AllergyID = (int)reader["AllergyID"],
+                        PatientName = (string)reader["PatientName"],
+                        Allergen = (string)reader["Allergen"],
+                        SeverityLevel = (int)reader["SeverityLevel"]
+                    };
+
+                    _log.InfoFormat("Patient details: ID = {0}, Name = {1}, Allergen = {2}, Severity Level = {3}", allergy.AllergyID, allergy.PatientName, allergy.Allergen, allergy.SeverityLevel);
+                }
+                else
+                {
+                    _log.Info("Patient not found.");
+                }
+            }
+        }
+
+        static void MostSevereAllergy()
+        {
+            List<Allergy> allergies = Getallergies();
+
+            Allergy mostSevereAllergy = FindMostSevereAllergy(allergies);
+
+            _log.InfoFormat("Most severe allergy: Allergy ID = {0}, Patient Name = {1}, Allergen = {2}, Severity Level = {3}", mostSevereAllergy.AllergyID, mostSevereAllergy.PatientName, mostSevereAllergy.Allergen, mostSevereAllergy.SeverityLevel);
+        }
+
+        static void SecondLeastSevereAllergy()
+        {
+            List<Allergy> allergies = Getallergies();
+
+            Allergy secondLeastSevereAllergy = FindSecondLeastSevereAllergy(allergies);
+
+            _log.InfoFormat("Second least severe allergy: Allergy ID = {0}, Patient Name = {1}, Allergen = {2}, Severity Level = {3}", secondLeastSevereAllergy.AllergyID, secondLeastSevereAllergy.PatientName, secondLeastSevereAllergy.Allergen, secondLeastSevereAllergy.SeverityLevel);
+        }
+
+        static void SortAllergiesByAllergen()
+        {
+            List<Allergy> allergies = Getallergies();
+
+            Allergy[] sortedAllergies = SortByAllergen(allergies.ToArray());
+
+            Console.WriteLine("Sorted allergies by allergen:");
+            foreach (var allergy in sortedAllergies)
+            {
+                _log.InfoFormat("Allergy ID = {0}, Patient Name = {1}, Allergen = {2}, Severity Level = {3}", allergy.AllergyID, allergy.PatientName, allergy.Allergen, allergy.SeverityLevel);
+            }
+        }
+
+        static void UpdatePatientDetails()
+        {
+            Console.Write("Enter patient ID: ");
+            int patientID = int.Parse(Console.ReadLine());
+            Console.Write("Enter new patient name: ");
+            string patientName = Console.ReadLine();
+            Console.Write("Enter new allergen: ");
+            string allergen = Console.ReadLine();
+            Console.Write("Enter new severity level: ");
+            int severityLevel = int.Parse(Console.ReadLine());
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                _log.Debug("Connected to database");
+
+                SqlCommand command = new SqlCommand("UPDATE Allergies SET PatientName = @PatientName, Allergen = @Allergen, SeverityLevel = @SeverityLevel WHERE AllergyID = @AllergyID", connection);
+                command.Parameters.AddWithValue("@PatientName", patientName);
+                command.Parameters.AddWithValue("@Allergen", allergen);
+                command.Parameters.AddWithValue("@SeverityLevel", severityLevel);
+                command.Parameters.AddWithValue("@AllergyID", patientID);
+
+                int rowsAffected = command.ExecuteNonQuery();
+                _log.InfoFormat("Updated patient: {0} with allergy {1} and severity level {2}", patientName, allergen, severityLevel);
+            }
+        }
+
+        static void DeletePatient()
+        {
+            Console.Write("Enter patient ID: ");
+            int patientID =int.Parse(Console.ReadLine());
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                _log.Debug("Connected to database");
+
+                SqlCommand command = new SqlCommand("DELETE FROM Allergies WHERE AllergyID = @AllergyID", connection);
+                command.Parameters.AddWithValue("@AllergyID", patientID);
+
+                int rowsAffected = command.ExecuteNonQuery();
+                _log.InfoFormat("Deleted patient: {0}", patientID);
+            }
+        }
+
+        static List<Allergy> Getallergies()
+        {
+            List<Allergy> allergies = new List<Allergy>();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                _log.Debug("Connected to database");
+
+                SqlCommand command = new SqlCommand("SELECT * FROM Allergies", connection);
+
+                SqlDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    Allergy allergy = new Allergy
+                    {
+                        AllergyID = (int)reader["AllergyID"],
+                        PatientName = (string)reader["PatientName"],
+                        Allergen = (string)reader["Allergen"],
+                        SeverityLevel = (int)reader["SeverityLevel"]
+                    };
+
+                    allergies.Add(allergy);
+                }
+            }
+
+            return allergies;
+        }
+
+        static Allergy FindMostSevereAllergy(List<Allergy> allergies)
+        {
+            Allergy mostSevereAllergy = allergies[0];
+            for (int i = 1; i < allergies.Count; i++)
+            {
+                if (allergies[i].SeverityLevel > mostSevereAllergy.SeverityLevel)
+                {
+                    mostSevereAllergy = allergies[i];
+                }
+            }
+            return mostSevereAllergy;
+        }
+
+        static Allergy FindSecondLeastSevereAllergy(List<Allergy> allergies)
+        {
+            int minSeverity = int.MaxValue;
+            int secondMinSeverity = int.MaxValue;
+            Allergy secondLeastSevereAllergy = null;
+
+            for (int i = 0; i < allergies.Count; i++)
+            {
+                if (allergies[i].SeverityLevel < minSeverity)
+                {
+                    secondMinSeverity = minSeverity;
+                    minSeverity = allergies[i].SeverityLevel;
+                    secondLeastSevereAllergy = allergies[i];
+                }
+                else if (allergies[i].SeverityLevel < secondMinSeverity && allergies[i].SeverityLevel != minSeverity)
+                {
+                    secondMinSeverity = allergies[i].SeverityLevel;
+                    secondLeastSevereAllergy = allergies[i];
+                }
+            }
+            return secondLeastSevereAllergy;
+        }
+
+        static Allergy[] SortByAllergen(Allergy[] allergies)
+        {
+            for (int i = 0; i < allergies.Length - 1; i++)
+            {
+                int minIndex = i;
+                for (int j = i + 1; j < allergies.Length; j++)
+                {
+                    if (string.Compare(allergies[j].Allergen, allergies[minIndex].Allergen) < 0)
+                    {
+                        minIndex = j;
+                    }
+                }
+                Allergy temp = allergies[i];
+                allergies[i] = allergies[minIndex];
+                allergies[minIndex] = temp;
+            }
+            return allergies;
+        }
+    }
+}
