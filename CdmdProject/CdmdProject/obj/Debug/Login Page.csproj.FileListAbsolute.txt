@@ -1,0 +1,21 @@
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\bin\Debug\CdmdProject.exe.config
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\bin\Debug\CdmdProject.exe
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\bin\Debug\CdmdProject.pdb
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\obj\Debug\Login Page.csproj.AssemblyReference.cache
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\obj\Debug\CdmdProject.ALertsAndNotifications.resources
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\obj\Debug\CdmdProject.DashboardOverview.resources
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\obj\Debug\CdmdProject.DataInput.resources
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\obj\Debug\CdmdProject.HealthMetrics.resources
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\obj\Debug\CdmdProject.lblLoginPage.resources
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\obj\Debug\CdmdProject.MainPage.resources
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\obj\Debug\CdmdProject.PatientProfile.resources
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\obj\Debug\CdmdProject.PatientProgress.resources
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\obj\Debug\CdmdProject.Properties.Resources.resources
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\obj\Debug\CdmdProject.ReportsAndAnalytics.resources
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\obj\Debug\CdmdProject.SettingsAndDeviceManagement.resources
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\obj\Debug\CdmdProject.TreatmentPlan.resources
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\obj\Debug\CdmdProject.UserManagement.resources
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\obj\Debug\Login Page.csproj.GenerateResource.cache
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\obj\Debug\Login Page.csproj.CoreCompileInputs.cache
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\obj\Debug\CdmdProject.exe
+C:\Users\2021490\source\repos\CdmdProject\CdmdProject\obj\Debug\CdmdProject.pdb
