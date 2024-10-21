@@ -64,3 +64,42 @@
     </DockPanel>
     </Grid>
 </Window>
+
+
+converter.cs
+
+using System;
+using System.Globalization;
+using System.Windows.Data;
+
+namespace Registration.Converters
+{
+    public class GenderConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            string gender = value as string;
+            string targetGender = parameter as string;
+
+            if (!string.IsNullOrEmpty(gender) && !string.IsNullOrEmpty(targetGender))
+            {
+                return gender.Equals(targetGender, StringComparison.InvariantCultureIgnoreCase);
+            }
+
+            return false;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            bool isChecked = (bool)value;
+            string targetGender = parameter as string;
+
+            if (isChecked && !string.IsNullOrEmpty(targetGender))
+            {
+                return targetGender;
+            }
+
+            return null;
+        }
+    }
+}
