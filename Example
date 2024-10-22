@@ -102,4 +102,117 @@ namespace Registration.Converters
             return null;
         }
     }
+
+
+
+
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
+
+using System.Xml.Serialization;
+using Registration.Commands;
+using Registration.Model;
+
+namespace Registration.View_Model
+{
+    public class PatientViewModel : BaseModel
+    {
+        private Patient _patient;
+        private List<Patient> patients;
+        private List<Patient> _patients;
+
+        public PatientViewModel()
+        {
+            _patient = new Patient();
+            _patients=new List<Patient>();
+            RegisterCommand = new RelayCommand(Register);
+            BackUpCommand = new RelayCommand(Backup);
+            LoadPatient();
+        }
+        public Patient Patient
+        {
+            get { return _patient; }
+            set
+            {
+                _patient = value;
+                onPropertyChanged("Patient");
+            }
+        }
+        public List<Patient> Patients
+        {
+            get { return _patients; }
+            set
+            {
+                _patients = value;
+                onPropertyChanged("Patients");
+            }
+        }
+        public ICommand RegisterCommand { get; }
+        public ICommand BackUpCommand { get;  }
+        private void Register(object obj)
+        {
+            string filepath = "Patient_Details.xml";
+            SavePatientData(filepath);
+            LoadPatient();
+            _patients.Add(_patient);
+        }
+        private void Backup(object obj)
+        {
+            string backfilepath = "Backup_Details.xml";
+            SavePatientData(backfilepath);
+        }
+        private void SavePatientData(string filepath)
+        {
+            try
+            {
+                XmlSerializer serializer = new XmlSerializer(typeof(Patient));
+                using (FileStream fs = new FileStream(filepath, FileMode.Create))
+                {
+                    serializer.Serialize(fs, _patient);
+                }
+                System.Windows.MessageBox.Show($"Contact is Saved");
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error saving contact:{ex.Message}");
+            }
+        }
+        private void LoadPatient()
+        {
+            string filepath = "Patient_Details.xml";
+            if (File.Exists(filepath))
+            {
+                try
+                {
+                    XmlSerializer serializer = new XmlSerializer(typeof(Patient));
+                    using (FileStream fs = new FileStream(filepath, FileMode.Open))
+                    {
+                        Patient = (Patient)serializer.Deserialize(fs);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(messageBoxText: $"{ex.Message}");
+                }
+            }
+        }
+    }
+}
+                
+                
+
+
+    
+
+
 }
