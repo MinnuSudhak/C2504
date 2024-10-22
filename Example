@@ -235,7 +235,10 @@ namespace Registration.View_Model
             <Canvas Grid.Column="0">
                 <Ellipse Width="100" Height="50" Fill="Gray" Canvas.Left="50" Canvas.Top="100" />
                 <Line Stroke="Black" X1="50" Y1="50" X2="150" Y2="200" Canvas.Left="50" Canvas.Top="100" />
-                </Canvas>
+                <Line Stroke="Black" X1="100" Y1="125" X2="150" Y2="125" StrokeDashArray="2 2" Canvas.Left="50" Canvas.Top="100" />
+                <Ellipse Width="10" Height="10" Fill="Black" Canvas.Left="150" Canvas.Top="120" />
+                <TextBlock Text="TOD" FontSize="10" Canvas.Left="160" Canvas.Top="120" />
+            </Canvas>
 
             <Button Grid.Column="1" Content="Set" Margin="10" />
         </Grid>
@@ -246,5 +249,3 @@ namespace Registration.View_Model
         </StackPanel>
     </Grid>
 </Window>
-    
-
