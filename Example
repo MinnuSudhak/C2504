@@ -104,14 +104,12 @@ namespace Registration.Converters
     }
 
 
-
-
-
-
+viewmodel
 
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -128,13 +126,11 @@ namespace Registration.View_Model
     public class PatientViewModel : BaseModel
     {
         private Patient _patient;
-        private List<Patient> patients;
         private List<Patient> _patients;
-
         public PatientViewModel()
         {
             _patient = new Patient();
-            _patients=new List<Patient>();
+            _patients = new List<Patient>();
             RegisterCommand = new RelayCommand(Register);
             BackUpCommand = new RelayCommand(Backup);
             LoadPatient();
@@ -146,15 +142,6 @@ namespace Registration.View_Model
             {
                 _patient = value;
                 onPropertyChanged("Patient");
-            }
-        }
-        public List<Patient> Patients
-        {
-            get { return _patients; }
-            set
-            {
-                _patients = value;
-                onPropertyChanged("Patients");
             }
         }
         public ICommand RegisterCommand { get; }
@@ -165,93 +152,8 @@ namespace Registration.View_Model
             SavePatientData(filepath);
             LoadPatient();
             _patients.Add(_patient);
-        }
-        private void Backup(object obj)
-        {
-            string backfilepath = "Backup_Details.xml";
-            SavePatientData(backfilepath);
-        }
-        private void SavePatientData(string filepath)
-        {
-            try
-            {
-                XmlSerializer serializer = new XmlSerializer(typeof(Patient));
-                using (FileStream fs = new FileStream(filepath, FileMode.Create))
-                {
-                    serializer.Serialize(fs, _patient);
-                }
-                System.Windows.MessageBox.Show($"Contact is Saved");
-            }
-            catch (Exception ex)
-            {
-                System.Windows.MessageBox.Show($"Error saving contact:{ex.Message}");
-            }
-        }
-        private void LoadPatient()
-        {
-            string filepath = "Patient_Details.xml";
-            if (File.Exists(filepath))
-            {
-                try
-                {
-                    XmlSerializer serializer = new XmlSerializer(typeof(Patient));
-                    using (FileStream fs = new FileStream(filepath, FileMode.Open))
-                    {
-                        Patient = (Patient)serializer.Deserialize(fs);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(messageBoxText: $"{ex.Message}");
-                }
-            }
-        }
-    }
-}
-                
-                
-
-
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
-
-using System.Xml.Serialization;
-using Registration.Commands;
-using Registration.Model;
-
-namespace Registration.View_Model
-{
-    public class PatientViewModel : BaseModel
-    {
-        private Patient _patient;
-        public PatientViewModel()
-        {
-            _patient = new Patient();
-            RegisterCommand = new RelayCommand(Register);
-            BackUpCommand = new RelayCommand(Backup);
-            LoadPatient();
-        }
-        public Patient Patient
-        {
-            get { return _patient; }
-            set
-            {
-                _patient = value;
-                onPropertyChanged("Patient");
-            }
-        }
-        public ICommand RegisterCommand { get; }
-        public ICommand BackUpCommand { get;  }
-        private void Register(object obj)
-        {
-            string filepath = "Patient_Details.xml";
-            SavePatientData(filepath);
+            _patient=new Patient();
+            onPropertyChanged("Patient");
         }
         private void Backup(object obj)
         {
@@ -263,10 +165,10 @@ namespace Registration.View_Model
         {
             try
             {
-                XmlSerializer serializer = new XmlSerializer(typeof(Patient));
+                XmlSerializer serializer = new XmlSerializer(typeof(List<Patient>));
                 using (FileStream fs = new FileStream(filepath, FileMode.Create))
                 {
-                    serializer.Serialize(fs, _patient);
+                    serializer.Serialize(fs, _patients);
                 }
                 MessageBox.Show($"Contact is Saved");
             }
@@ -282,16 +184,21 @@ namespace Registration.View_Model
             {
                 try
                 {
-                    XmlSerializer serializer = new XmlSerializer(typeof(Patient));
+                    XmlSerializer serializer = new XmlSerializer(typeof(List<Patient>));
                     using (FileStream fs = new FileStream(filepath, FileMode.Open))
                     {
-                        Patient = (Patient)serializer.Deserialize(fs);
+                        _patients = (List<Patient>)serializer.Deserialize(fs);
                     }
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show(messageBoxText: $"{ex.Message}");
                 }
+                
+            }
+            else
+            {
+                _patients=new List<Patient>();
             }
         }
     }
@@ -301,98 +208,4 @@ namespace Registration.View_Model
 
 
     
-
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
-
-using System.Xml.Serialization;
-using Registration.Commands;
-using Registration.Model;
-
-namespace Registration.View_Model
-{
-    public class PatientViewModel : BaseModel
-    {
-        private Patient _patient;
-        public PatientViewModel()
-        {
-            _patient = new Patient();
-            RegisterCommand = new RelayCommand(Register);
-            BackUpCommand = new RelayCommand(Backup);
-            LoadPatient();
-        }
-        public Patient Patient
-        {
-            get { return _patient; }
-            set
-            {
-                _patient = value;
-                onPropertyChanged("Patient");
-            }
-        }
-        public ICommand RegisterCommand { get; }
-        public ICommand BackUpCommand { get;  }
-        private void Register(object obj)
-        {
-            string filepath = "Patient_Details.xml";
-            SavePatientData(filepath);
-        }
-        private void Backup(object obj)
-        {
-            string backfilepath = "Backup_Details.xml";
-            SavePatientData(backfilepath);
-            
-        }
-        private void SavePatientData(string filepath)
-        {
-            try
-            {
-                XmlSerializer serializer = new XmlSerializer(typeof(Patient));
-                using (FileStream fs = new FileStream(filepath, FileMode.Create))
-                {
-                    serializer.Serialize(fs, _patient);
-                }
-                MessageBox.Show($"Contact is Saved");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(messageBoxText: $"{ex.Message}");
-            }
-        }
-        private void LoadPatient()
-        {
-            string filepath = "Patient_Details.xml";
-            if (File.Exists(filepath))
-            {
-                try
-                {
-                    XmlSerializer serializer = new XmlSerializer(typeof(Patient));
-                    using (FileStream fs = new FileStream(filepath, FileMode.Open))
-                    {
-                        Patient = (Patient)serializer.Deserialize(fs);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(messageBoxText: $"{ex.Message}");
-                }
-            }
-        }
-    }
-}
-                
-                
-
-
-    
-
-
-
-
 
