@@ -1,0 +1,68 @@
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Xml.Linq;
+
+namespace YourNamespace
+{
+    public partial class MainWindow : Window
+    {
+        private Button _selectedButton;
+
+        public MainWindow()
+        {
+            InitializeComponent();
+
+            // Assigning Person objects to each button's Tag property
+            Button1.Tag = new Person("John", 25, "Male");
+            Button2.Tag = new Person("Mary", 30, "Female");
+            Button3.Tag = new Person("Alex", 28, "Male");
+            Button4.Tag = new Person("Lucy", 24, "Female");
+            Button5.Tag = new Person("Sam", 35, "Male");
+        }
+
+        // Event handler for normal buttons
+        private void NormalButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Reset previous button color if a button is already selected
+            if (_selectedButton != null)
+            {
+                _selectedButton.Background = new SolidColorBrush(Colors.LightGray);
+            }
+
+            // Update the selected button and change its color
+            _selectedButton = sender as Button;
+            if (_selectedButton != null)
+            {
+                _selectedButton.Background = new SolidColorBrush(Colors.CornflowerBlue);
+            }
+        }
+
+        // Event handler for the save button
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_selectedButton == null)
+            {
+                MessageBox.Show("Please select a button to save its details.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Retrieve the person details from the Tag property
+            if (_selectedButton.Tag is Person person)
+            {
+                // Create XML with selected button details
+                XElement personData = new XElement("Person",
+                    new XElement("Name", person.Name),
+                    new XElement("Age", person.Age),
+                    new XElement("Sex", person.Sex)
+                );
+
+                // Save to XML file
+                string fileName = $"{person.Name}_Details.xml";
+                personData.Save(fileName);
+
+                MessageBox.Show($"Details of {_selectedButton.Content} saved to {fileName} successfully!", "Saved", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+    }
+}
