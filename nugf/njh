@@ -1,1 +1,158 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Input;
+
+namespace Task13
+{
+    public class view:INotifyPropertyChanged
+    {
+        public ObservableCollection<Patient> Patients { get; set; }
+        private Patient _spatients;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertychanged(string propertyName)
+        {
+            if(PropertyChanged!=null)
+            {
+                PropertyChanged.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+        public Patient SPatients
+        {
+            get { return _spatients; }
+            set { _spatients = value; OnPropertychanged(nameof(SPatients)); }
+        }
+        public ICommand Update { get; }
+       
+
+        public view()
+        {
+            Patients = new ObservableCollection<Patient>
+            {
+                new Patient {Patientid=101,PatientName="Minnu",Age=25,Status="Pending" }
+            };
+            Update = new RelayCommand(update);
+            }
+
+       
+
+        private void update()
+        {
+            if (SPatients != null)
+            {
+                SPatients.Patientid = 101;
+                SPatients.PatientName = "Collin";
+                SPatients.Age = 23;
+                SPatients.Status = "Completed";
+                 OnPropertychanged(nameof(Patients));
+            }
+        }
+
+
+        }
+           
+    }
+
+            
+            
+
+
+        
+            
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Input;
+
+namespace Task13
+{
+    public class RelayCommand : ICommand
+    {   
+        private readonly Action _execute;
+
+        private readonly Func<bool> _canExecute;
+
+        public RelayCommand(Action execute, Func<bool> canExecute = null)
+        {
+            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
+            _canExecute = canExecute;
+        }
+
+        public event EventHandler CanExecuteChanged
+        {
+            add { CommandManager.RequerySuggested += value; }
+            remove { CommandManager.RequerySuggested -= value; }
+        }
+
+        public bool CanExecute(object parameter)
+        {
+            return _canExecute == null || _canExecute();
+        }
+
+        public void Execute(object parameter)
+        {
+            _execute();
+        }
+    }
+}
+
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Task13
+{
+  public class Patient
+    {
+        public int Patientid { get; set; }
+        public string PatientName { get; set; }
+        public int Age { get; set; }
+        public string Status { get; set; }
+
+    
+    }
+}
+
+
+
+<Window x:Class="Task13.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Task13" d:DataContext="{d:DesignInstance Type=local:view}"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid Background="Black">
+        <DockPanel LastChildFill="True" Margin="20">
+            <DataGrid Background="#444647" Margin="10" ItemsSource="{Binding Patients}"    SelectedItem="{Binding SPatients,Mode=TwoWay}" AutoGenerateColumns="False" BorderBrush="Black" Height="290" IsReadOnly="True">
+                <DataGrid.Columns >
+                    <DataGridTextColumn  Header="Patient Id" Binding="{Binding Patientid,Mode=TwoWay}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="Patient Name" Binding="{Binding PatientName,Mode=TwoWay}" ></DataGridTextColumn>
+                    <DataGridTextColumn Header="Age" Binding="{Binding Age,Mode=TwoWay}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status,Mode=TwoWay}"></DataGridTextColumn>
+                                        
+                </DataGrid.Columns>
+            </DataGrid>
+            
+        </DockPanel>
+        <Button Margin="620,368,31,10" Content="Update" Command="{Binding Update}" ></Button>
+        
+    </Grid>
+</Window>
+
+    
+
 
