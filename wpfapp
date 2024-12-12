@@ -34,3 +34,68 @@ Global
 		SolutionGuid = {73C9AAA3-7C87-4817-8929-6A623A93C679}
 	EndGlobalSection
 EndGlobal
+
+
+
+
+using System;
+using System.IO;
+
+class SolutionFileUpdater
+{
+    static void Main()
+    {
+        string solutionFilePath = @"C:\Path\To\YourSolution.sln"; // Update the solution file path
+        string pluginParamFolder = @"..\plugin param";  // Relative path to plugin param folder
+        string pluginFolder = @"..\plugin"; // Relative path to plugin folder
+
+        // Read the solution file content
+        string[] lines = File.ReadAllLines(solutionFilePath);
+        bool inPluginParamSection = false;
+        bool inPluginSection = false;
+
+        // Process each line in the .sln file
+        for (int i = 0; i < lines.Length; i++)
+        {
+            // Detect when we enter the "plugin param" project section
+            if (lines[i].Contains("Project(\"{2150E333-8FDC-42A3-9474-1A3956D46DE8}\") = \"plugin param\""))
+            {
+                inPluginParamSection = true;
+            }
+            // Detect when we enter the "plugin" project section
+            else if (lines[i].Contains("Project(\"{2150E333-8FDC-42A3-9474-1A3956D46DE8}\") = \"plugin\""))
+            {
+                inPluginSection = true;
+            }
+
+            // If we are in the "plugin param" project section, look for .cs files
+            if (inPluginParamSection && lines[i].Contains(".cs"))
+            {
+                // Replace the path to point to the plugin folder instead of plugin param
+                if (lines[i].Contains(pluginParamFolder))
+                {
+                    lines[i] = lines[i].Replace(pluginParamFolder, pluginFolder);
+                }
+            }
+
+            // If we encounter the end of a project section, reset flags
+            if (lines[i].Contains("EndProjectSection"))
+            {
+                if (inPluginParamSection)
+                {
+                    inPluginParamSection = false;
+                }
+                else if (inPluginSection)
+                {
+                    inPluginSection = false;
+                }
+            }
+        }
+
+        // Save the updated solution file
+        File.WriteAllLines(solutionFilePath, lines);
+
+        Console.WriteLine("Solution file updated successfully.");
+    }
+}
+
