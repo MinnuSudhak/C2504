@@ -1,0 +1,36 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.168
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfApp1", "WpfApp1\WpfApp1.csproj", "{120AD698-09A7-4310-9680-B7A3B525A169}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "plugin", "plugin", "{084FBBEB-27C9-4A44-A8F2-F0DF4B4FA7FC}"
+	ProjectSection(SolutionItems) = preProject
+		RFAngle.cs = RFAngle.cs
+
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "plugin param", "plugin param", "{F6EBE7CF-1700-4E17-89C1-63142C17A002}"
+	ProjectSection(SolutionItems) = preProject
+		RFArrow.cs = RFArrow.cs
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{120AD698-09A7-4310-9680-B7A3B525A169}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{120AD698-09A7-4310-9680-B7A3B525A169}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{120AD698-09A7-4310-9680-B7A3B525A169}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{120AD698-09A7-4310-9680-B7A3B525A169}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {73C9AAA3-7C87-4817-8929-6A623A93C679}
+	EndGlobalSection
+EndGlobal
