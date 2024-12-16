@@ -99,3 +99,250 @@ class SolutionFileUpdater
     }
 }
 
+
+
+
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Windows;
+
+namespace PluginCreatorFeasibility
+{
+    public class TemplateCreationManager
+    {
+        const string PLPluginTemplatePath = @"..\..\..\PluginTemplate\PLPluginTemplate";
+        const string IPPluginTemplatePath = @"..\..\..\PluginTemplate\IPPluginTemplate";
+        const string IPPluginParamTemplatePath = @"..\..\..\PluginTemplate\IPPluginParamTemplate";
+        const string PLTemplateName = "PLPlugintemplate";
+        const string IPTemplateName = "IPPlugintemplate";
+        const string IPParamTemplateName = "IPPluginParamtemplate";
+
+        const string PLPluginProjectPath = @"..\..\..\PresentationLayer\Plugin\";
+        const string IPPluginProjectPath = @"..\..\..\ImageProcess\Plugin\";
+        const string IPPluginParamProjectPath = @"..\..\..\ImageProcess\PluginParam\";
+        const string solutionPath = @"..\..\..\PluginCreatorFeasibility.sln";
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public TemplateCreationManager()
+        {
+            AddPluginTemplate();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void AddPluginTemplate()
+        {
+            bool plTemplate, ipTemplate, ipParamTemplate = false;
+
+            if (!CheckPluginTemplate(out plTemplate, out ipTemplate, out ipParamTemplate))
+            {
+                if (!plTemplate)
+                {
+                    RegisterPluginTemplate(PLPluginTemplatePath);
+                }
+
+                if (!ipTemplate)
+                {
+                    RegisterPluginTemplate(IPPluginTemplatePath);
+                }
+
+                if (!ipParamTemplate)
+                {
+                    RegisterPluginTemplate(IPPluginParamTemplatePath);
+                }
+            }
+        }
+
+        private bool CheckPluginTemplate(out bool isPLTemplateAvailable, out bool isIPTemplateAvailable,
+            out bool isIPParamTemplateAvailable)
+        {
+            isPLTemplateAvailable = isIPTemplateAvailable = isIPParamTemplateAvailable = false;
+
+            try
+            {
+                ProcessStartInfo processStartInfo = new ProcessStartInfo
+                {
+                    FileName = "dotnet",
+                    Arguments = "new --list",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                using (Process process = new Process
+                {
+                    StartInfo = processStartInfo
+                })
+                {
+                    process.Start();
+                    string output = process.StandardOutput.ReadToEnd();
+                    string error = process.StandardError.ReadToEnd();
+                    process.WaitForExit();
+
+                    if (output.Contains(PLTemplateName))
+                    {
+                        isPLTemplateAvailable = true;
+                    }
+                    if (output.Contains(IPTemplateName))
+                    {
+                        isIPTemplateAvailable = true;
+                    }
+                    if (output.Contains(IPParamTemplateName))
+                    {
+                        isIPParamTemplateAvailable = true;
+                    }
+
+                    if (!string.IsNullOrEmpty(error))
+                    {
+                        MessageBox.Show(error);
+                        return false;
+                    }
+
+                    if (!isPLTemplateAvailable || !isIPTemplateAvailable || !isIPParamTemplateAvailable)
+                    {
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return false;
+            }
+            return true;
+        }
+
+        private bool RegisterPluginTemplate(string templatePath)
+        {
+            string command = "dotnet";
+            string arugument = $"new --install {templatePath}";
+            return ExecuteCommand(command, arugument);
+        }
+
+        private bool ExecuteCommand(string command, string argument)
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = command,
+                Arguments = argument,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using (var process = new Process { StartInfo = startInfo })
+            {
+                try
+                {
+                    process.Start();
+
+                    string output = process.StandardOutput.ReadToEnd();
+                    string error = process.StandardError.ReadToEnd();
+                    process.WaitForExit();
+
+                    if (!string.IsNullOrEmpty(error))
+                    {
+                        MessageBox.Show(error, "Error");
+                        return false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Catch");
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public string CreateProject(string projectName)
+        {
+            string result = string.Empty;
+
+            // Create PL plugin project
+            if (!CreatePLPluginProject(projectName))
+            {
+                result = "PL Plugin project Creation Failed";
+            }
+
+            // Create IP plugin project
+            if (!CreateIPPluginProject(projectName))
+            {
+                result = "IP Plugin project Creation Failed";
+            }
+
+            // Create IP plugin param project
+            if (!CreateIPPluginParamProject(projectName))
+            {
+                result = "IP Plugin param project Creation Failed";
+            }
+
+            return result;
+        }
+
+        private bool CreatePLPluginProject(string projectName)
+        {
+            string command = "dotnet";
+            string createArgument = $@"new {PLTemplateName} -o {PLPluginProjectPath}{projectName} -C {{{Guid.NewGuid()}}}";
+            string addToSolutionArgument = $"sln {solutionPath} add {PLPluginProjectPath}{projectName}\\{projectName}.csproj";
+            try
+            {
+                ExecuteCommand(command, createArgument);
+                ExecuteCommand(command, addToSolutionArgument);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool CreateIPPluginProject(string projectName)
+        {
+            string command = "dotnet";
+            string createArgument = $@"new {IPTemplateName} -o {IPPluginProjectPath}{projectName} -C {{{Guid.NewGuid()}}}";
+            string addToSolutionArgument = $"sln {solutionPath} add {IPPluginProjectPath}{projectName}\\{projectName}.csproj";
+            try
+            {
+                ExecuteCommand(command, createArgument);
+                ExecuteCommand(command, addToSolutionArgument);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool CreateIPPluginParamProject(string projectName)
+        {
+            string command = "dotnet";
+            string createArgument = $@"new {IPParamTemplateName} -o {IPPluginParamProjectPath}{projectName}Param -C {{{Guid.NewGuid()}}}";
+            string addToSolutionArgument = $"sln {solutionPath} add {IPPluginParamProjectPath}{projectName}Param\\{projectName}Param.csproj";
+            try
+            {
+                ExecuteCommand(command, createArgument);
+                ExecuteCommand(command, addToSolutionArgument);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+    }
+}
+
