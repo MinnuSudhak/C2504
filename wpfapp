@@ -555,3 +555,73 @@ namespace PluginVerificationApp
 }
 
 
+
+
+using System.Collections.Generic;
+
+namespace PluginVerificationApp
+{
+    public interface IPlugin
+    {
+        string PluginName { get; }
+        List<InputField> GetInputFields();
+    }
+
+    public class InputField
+    {
+        public string Label { get; set; }
+        public string FieldType { get; set; } // TextBox, ComboBox, etc.
+        public List<string> Options { get; set; } // For ComboBox
+    }
+}
+
+
+
+
+
+using System.Collections.Generic;
+
+namespace PluginVerificationApp
+{
+    public class RFAnglePlugin : IPlugin
+    {
+        public string PluginName => "RFAngle";
+
+        public List<InputField> GetInputFields()
+        {
+            return new List<InputField>
+            {
+                new InputField { Label = "Angle Input 1", FieldType = "TextBox" },
+                new InputField { Label = "Angle Input 2", FieldType = "TextBox" },
+                new InputField { Label = "Select Mode", FieldType = "ComboBox", Options = new List<string> { "Mode1", "Mode2" } }
+            };
+        }
+    }
+}
+
+
+
+
+
+
+using System.Collections.Generic;
+
+namespace PluginVerificationApp
+{
+    public class RFMeasurePlugin : IPlugin
+    {
+        public string PluginName => "RFMeasure";
+
+        public List<InputField> GetInputFields()
+        {
+            return new List<InputField>
+            {
+                new InputField { Label = "Object Length 1", FieldType = "TextBox" },
+                new InputField { Label = "Object Length 2", FieldType = "TextBox" },
+                new InputField { Label = "Measurement Unit", FieldType = "ComboBox", Options = new List<string> { "cm", "inches" } }
+            };
+        }
+    }
+}
+
+
