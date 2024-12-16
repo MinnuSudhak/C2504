@@ -300,3 +300,115 @@ namespace PluginCreatorFeasibility
     </Grid>
 </Window>
 
+
+
+
+
+
+using System.Windows;
+using System.Windows.Controls;
+
+namespace PluginVerificationApp
+{
+    public partial class MainWindow : Window
+    {
+        public MainWindow()
+        {
+            InitializeComponent();
+        }
+
+        private void PluginComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Clear existing input fields
+            DynamicInputPanel.Children.Clear();
+
+            // Get selected plugin
+            var selectedPlugin = (PluginComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+
+            // Add input fields based on the selected plugin
+            switch (selectedPlugin)
+            {
+                case "PLPlugin":
+                    AddTextBox("Raw Input");
+                    AddComboBox("Select Mode", new[] { "Mode1", "Mode2" });
+                    break;
+
+                case "IPPlugin":
+                    AddButton("Browse", "Select Image File");
+                    AddTextBox("Threshold");
+                    break;
+
+                case "AnotherPlugin":
+                    AddTextBox("Custom Input");
+                    AddTextBox("Additional Parameter");
+                    break;
+
+                default:
+                    MessageBox.Show("Unknown Plugin Selected.");
+                    break;
+            }
+        }
+
+        private void AddTextBox(string labelText)
+        {
+            // Add a label
+            DynamicInputPanel.Children.Add(new TextBlock
+            {
+                Text = labelText,
+                FontWeight = FontWeights.Bold,
+                Margin = new Thickness(0, 10, 0, 5)
+            });
+
+            // Add a TextBox
+            DynamicInputPanel.Children.Add(new TextBox
+            {
+                Width = 300,
+                Margin = new Thickness(0, 0, 0, 10)
+            });
+        }
+
+        private void AddComboBox(string labelText, string[] options)
+        {
+            // Add a label
+            DynamicInputPanel.Children.Add(new TextBlock
+            {
+                Text = labelText,
+                FontWeight = FontWeights.Bold,
+                Margin = new Thickness(0, 10, 0, 5)
+            });
+
+            // Add a ComboBox
+            var comboBox = new ComboBox
+            {
+                Width = 200,
+                Margin = new Thickness(0, 0, 0, 10)
+            };
+
+            foreach (var option in options)
+            {
+                comboBox.Items.Add(new ComboBoxItem { Content = option });
+            }
+
+            DynamicInputPanel.Children.Add(comboBox);
+        }
+
+        private void AddButton(string buttonText, string tooltip)
+        {
+            // Add a Button
+            DynamicInputPanel.Children.Add(new Button
+            {
+                Content = buttonText,
+                Width = 100,
+                Margin = new Thickness(0, 10, 0, 10),
+                ToolTip = tooltip
+            });
+        }
+
+        private void VerifyPlugin_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Verification logic goes here!");
+        }
+    }
+}
+
+
