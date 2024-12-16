@@ -1,103 +1,10 @@
 
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.168
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfApp1", "WpfApp1\WpfApp1.csproj", "{120AD698-09A7-4310-9680-B7A3B525A169}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "plugin", "plugin", "{084FBBEB-27C9-4A44-A8F2-F0DF4B4FA7FC}"
-	ProjectSection(SolutionItems) = preProject
-		RFAngle.cs = RFAngle.cs
-
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "plugin param", "plugin param", "{F6EBE7CF-1700-4E17-89C1-63142C17A002}"
-	ProjectSection(SolutionItems) = preProject
-		RFArrow.cs = RFArrow.cs
-	EndProjectSection
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{120AD698-09A7-4310-9680-B7A3B525A169}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{120AD698-09A7-4310-9680-B7A3B525A169}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{120AD698-09A7-4310-9680-B7A3B525A169}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{120AD698-09A7-4310-9680-B7A3B525A169}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {73C9AAA3-7C87-4817-8929-6A623A93C679}
-	EndGlobalSection
-EndGlobal
+ 
 
 
 
 
-using System;
-using System.IO;
-
-class SolutionFileUpdater
-{
-    static void Main()
-    {
-        string solutionFilePath = @"C:\Path\To\YourSolution.sln"; // Update the solution file path
-        string pluginParamFolder = @"..\plugin param";  // Relative path to plugin param folder
-        string pluginFolder = @"..\plugin"; // Relative path to plugin folder
-
-        // Read the solution file content
-        string[] lines = File.ReadAllLines(solutionFilePath);
-        bool inPluginParamSection = false;
-        bool inPluginSection = false;
-
-        // Process each line in the .sln file
-        for (int i = 0; i < lines.Length; i++)
-        {
-            // Detect when we enter the "plugin param" project section
-            if (lines[i].Contains("Project(\"{2150E333-8FDC-42A3-9474-1A3956D46DE8}\") = \"plugin param\""))
-            {
-                inPluginParamSection = true;
-            }
-            // Detect when we enter the "plugin" project section
-            else if (lines[i].Contains("Project(\"{2150E333-8FDC-42A3-9474-1A3956D46DE8}\") = \"plugin\""))
-            {
-                inPluginSection = true;
-            }
-
-            // If we are in the "plugin param" project section, look for .cs files
-            if (inPluginParamSection && lines[i].Contains(".cs"))
-            {
-                // Replace the path to point to the plugin folder instead of plugin param
-                if (lines[i].Contains(pluginParamFolder))
-                {
-                    lines[i] = lines[i].Replace(pluginParamFolder, pluginFolder);
-                }
-            }
-
-            // If we encounter the end of a project section, reset flags
-            if (lines[i].Contains("EndProjectSection"))
-            {
-                if (inPluginParamSection)
-                {
-                    inPluginParamSection = false;
-                }
-                else if (inPluginSection)
-                {
-                    inPluginSection = false;
-                }
-            }
-        }
-
-        // Save the updated solution file
-        File.WriteAllLines(solutionFilePath, lines);
-
-        Console.WriteLine("Solution file updated successfully.");
-    }
-}
+        
 
 
 
@@ -345,4 +252,51 @@ namespace PluginCreatorFeasibility
         }
     }
 }
+
+
+
+
+
+
+
+
+
+<Window x:Class="PluginVerificationApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Plugin Verification" Height="400" Width="600">
+    <Grid Margin="10">
+        <!-- Main Layout -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" /> <!-- For plugin selection -->
+            <RowDefinition Height="*" />   <!-- For dynamic input fields -->
+            <RowDefinition Height="Auto" /> <!-- For Verify Button -->
+        </Grid.RowDefinitions>
+
+        <!-- Plugin Selection -->
+        <StackPanel Orientation="Vertical" Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="Select Plugin:" FontWeight="Bold" Margin="0,0,0,5" />
+            <ComboBox x:Name="PluginComboBox" 
+                      SelectionChanged="PluginComboBox_SelectionChanged"
+                      Width="200" HorizontalAlignment="Left">
+                <!-- Example plugins; replace with dynamic binding -->
+                <ComboBoxItem Content="PLPlugin" />
+                <ComboBoxItem Content="IPPlugin" />
+                <ComboBoxItem Content="AnotherPlugin" />
+            </ComboBox>
+        </StackPanel>
+
+        <!-- Dynamic Input Fields -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="DynamicInputPanel" Margin="0,0,0,10">
+                <!-- Dynamic fields will be added here programmatically -->
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Verify Button -->
+        <Button Grid.Row="2" Content="Verify Plugin" Width="120" Height="30" 
+                HorizontalAlignment="Right" VerticalAlignment="Center" 
+                Click="VerifyPlugin_Click" />
+    </Grid>
+</Window>
 
