@@ -1,0 +1,171 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Xml.Linq;
+
+namespace PluginVerificationApp
+{
+    public class PluginManager
+    {
+        private readonly string pluginsDirectory = "Plugins";
+
+        public PluginManager()
+        {
+            // Ensure the Plugins directory exists
+            if (!Directory.Exists(pluginsDirectory))
+                Directory.CreateDirectory(pluginsDirectory);
+        }
+
+        // Create a new plugin XML file
+        public void CreatePlugin(string pluginName, (string Label, string Type, string[] Options)[] fields)
+        {
+            string filePath = Path.Combine(pluginsDirectory, $"{pluginName}.xml");
+
+            XDocument pluginDoc = new XDocument(
+                new XElement("Plugin",
+                    new XAttribute("Name", pluginName),
+                    CreateFields(fields)
+                )
+            );
+
+            pluginDoc.Save(filePath);
+            Console.WriteLine($"Plugin '{pluginName}' created at {filePath}");
+        }
+
+        // Load all plugin names (XML filenames) dynamically
+        public List<string> GetAllPlugins()
+        {
+            return Directory.GetFiles(pluginsDirectory, "*.xml")
+                            .Select(Path.GetFileNameWithoutExtension)
+                            .ToList();
+        }
+
+        // Load fields for a specific plugin
+        public List<(string Label, string Type, List<string> Options)> LoadPluginFields(string pluginName)
+        {
+            string filePath = Path.Combine(pluginsDirectory, $"{pluginName}.xml");
+            if (!File.Exists(filePath)) throw new FileNotFoundException("Plugin file not found.");
+
+            XDocument pluginDoc = XDocument.Load(filePath);
+
+            return pluginDoc.Root.Elements("Field").Select(field =>
+            {
+                string label = field.Attribute("Label")?.Value;
+                string type = field.Attribute("Type")?.Value;
+
+                var options = field.Element("Options")?.Elements("Option")
+                                  .Select(option => option.Value).ToList();
+
+                return (label, type, options ?? new List<string>());
+            }).ToList();
+        }
+
+        private XElement[] CreateFields((string Label, string Type, string[] Options)[] fields)
+        {
+            return fields.Select(field =>
+            {
+                var fieldElement = new XElement("Field",
+                    new XAttribute("Label", field.Label),
+                    new XAttribute("Type", field.Type)
+                );
+
+                if (field.Type == "dropdown" && field.Options != null)
+                {
+                    fieldElement.Add(new XElement("Options",
+                        field.Options.Select(option => new XElement("Option", option))));
+                }
+
+                return fieldElement;
+            }).ToArray();
+        }
+    }
+}
+
+
+
+
+
+
+<Window x:Class="PluginVerificationApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Plugin Verification" Height="400" Width="600">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- ComboBox to list plugins -->
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Select Plugin: " VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <ComboBox x:Name="PluginsComboBox" Width="200" SelectionChanged="PluginsComboBox_SelectionChanged"/>
+        </StackPanel>
+
+        <!-- Dynamic input fields -->
+        <ScrollViewer Grid.Row="1">
+            <StackPanel x:Name="InputFieldsPanel" Margin="0,10,0,0"/>
+        </ScrollViewer>
+    </Grid>
+</Window>
+
+
+
+
+
+
+using System.Windows;
+using System.Windows.Controls;
+
+namespace PluginVerificationApp
+{
+    public partial class MainWindow : Window
+    {
+        private PluginManager pluginManager;
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            pluginManager = new PluginManager();
+
+            LoadPlugins();
+        }
+
+        private void LoadPlugins()
+        {
+            // Load all plugin names into ComboBox
+            PluginsComboBox.ItemsSource = pluginManager.GetAllPlugins();
+        }
+
+        private void PluginsComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PluginsComboBox.SelectedItem == null) return;
+
+            string selectedPlugin = PluginsComboBox.SelectedItem.ToString();
+            var fields = pluginManager.LoadPluginFields(selectedPlugin);
+
+            // Clear the previous input fields
+            InputFieldsPanel.Children.Clear();
+
+            // Dynamically generate input fields
+            foreach (var field in fields)
+            {
+                var label = new TextBlock { Text = field.Label, Margin = new Thickness(0, 5, 0, 0) };
+                InputFieldsPanel.Children.Add(label);
+
+                if (field.Type == "dropdown")
+                {
+                    var comboBox = new ComboBox { ItemsSource = field.Options, Width = 200 };
+                    InputFieldsPanel.Children.Add(comboBox);
+                }
+                else
+                {
+                    var textBox = new TextBox { Width = 200 };
+                    InputFieldsPanel.Children.Add(textBox);
+                }
+            }
+        }
+    }
+}
+
