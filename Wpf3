@@ -1,4 +1,4 @@
-public abstract class PluginBase
+jipublic abstract class PluginBase
 {
     public string Name { get; set; }
     public abstract void Execute(Dictionary<string, object> parameters);
@@ -107,11 +107,11 @@ public class PluginManager
 
 
 
-public partial class MainForm : Form
+public partial class MainWindow : Window
 {
     private readonly PluginManager _pluginManager;
 
-    public MainForm()
+    public MainWindow()
     {
         InitializeComponent();
         _pluginManager = new PluginManager("path_to_plugins_directory");
@@ -121,10 +121,10 @@ public partial class MainForm : Form
     private void LoadPluginNames()
     {
         var pluginNames = _pluginManager.LoadPluginNames();
-        comboBoxPlugins.DataSource = pluginNames;
+        comboBoxPlugins.ItemsSource = pluginNames;
     }
 
-    private void comboBoxPlugins_SelectedIndexChanged(object sender, EventArgs e)
+    private void comboBoxPlugins_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         var selectedPluginName = comboBoxPlugins.SelectedItem.ToString();
         var plugin = _pluginManager.LoadPlugin(selectedPluginName);
@@ -138,7 +138,7 @@ public partial class MainForm : Form
         }
     }
 
-    private void buttonVerifyPlugin_Click(object sender, EventArgs e)
+    private void buttonVerifyPlugin_Click(object sender, RoutedEventArgs e)
     {
         var selectedPluginName = comboBoxPlugins.SelectedItem.ToString();
         var plugin = _pluginManager.LoadPlugin(selectedPluginName);
