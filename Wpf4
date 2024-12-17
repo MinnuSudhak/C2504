@@ -1,0 +1,131 @@
+public interface IPlugin
+{
+    string Name { get; }
+    UserControl GetUserControl();
+}
+
+
+
+
+public class SamplePlugin : IPlugin
+{
+    public string Name => "Sample Plugin";
+
+    public UserControl GetUserControl()
+    {
+        return new SamplePluginUserControl();
+    }
+}
+
+
+
+
+
+<!-- SamplePluginUserControl.xaml -->
+<UserControl x:Class="YourNamespace.SamplePluginUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:YourNamespace">
+    <StackPanel>
+        <!-- Define your plugin's UI elements here -->
+        <TextBox Name="Parameter1TextBox" />
+        <TextBox Name="Parameter2TextBox" />
+        <!-- Add other UI elements as needed -->
+    </StackPanel>
+</UserControl>
+
+
+
+
+
+public class PluginManager
+{
+    private readonly string _pluginDirectory;
+
+    public PluginManager(string pluginDirectory)
+    {
+        _pluginDirectory = pluginDirectory;
+    }
+
+    public List<IPlugin> LoadPlugins()
+    {
+        var plugins = new List<IPlugin>();
+
+        if (!Directory.Exists(_pluginDirectory))
+            return plugins;
+
+        var pluginFiles = Directory.GetFiles(_pluginDirectory, "*.dll");
+
+        foreach (var file in pluginFiles)
+        {
+            try
+            {
+                var assembly = Assembly.LoadFrom(file);
+                var pluginType = assembly.GetTypes()
+                    .FirstOrDefault(t => typeof(IPlugin).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
+
+                if (pluginType != null)
+                {
+                    var plugin = (IPlugin)Activator.CreateInstance(pluginType);
+                    plugins.Add(plugin);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to load plugin from {file}: {ex.Message}");
+            }
+        }
+
+        return plugins;
+    }
+}
+
+
+
+
+
+
+public partial class MainWindow : Window
+{
+    private readonly PluginManager _pluginManager;
+
+    public MainWindow()
+    {
+        InitializeComponent();
+        _pluginManager = new PluginManager("path_to_plugins_directory");
+        LoadPluginNames();
+    }
+
+    private void LoadPluginNames()
+    {
+        var plugins = _pluginManager.LoadPlugins();
+        comboBoxPlugins.ItemsSource = plugins;
+        comboBoxPlugins.DisplayMemberPath = "Name";
+    }
+
+    private void comboBoxPlugins_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (comboBoxPlugins.SelectedItem is IPlugin selectedPlugin)
+        {
+            var userControl = selectedPlugin.GetUserControl();
+            contentControl.Content = userControl;
+        }
+    }
+
+    private void buttonVerifyPlugin_Click(object sender, RoutedEventArgs e)
+    {
+        if (comboBoxPlugins.SelectedItem is IPlugin selectedPlugin)
+        {
+            // Collect input values from the UI
+            var parameters = new Dictionary<string, object>
+            {
+                { "Parameter1", ((SamplePluginUserControl)contentControl.Content).Parameter1TextBox.Text },
+                { "Parameter2", ((SamplePluginUserControl)contentControl.Content).Parameter2TextBox.Text }
+                // Add other parameters as needed
+            };
+
+            // Execute the plugin's method
+            selectedPlugin.Execute(parameters);
+        }
+    }
+}
