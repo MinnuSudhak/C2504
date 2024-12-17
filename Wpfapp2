@@ -393,3 +393,17 @@ namespace PluginVerificationApp
         }
     }
 }
+
+
+
+
+
+<Plugins>
+    <Plugin Name="ExamplePlugin">
+        <Field Label="Field1" Type="text" />
+        <Field Label="Field2" Type="dropdown">
+            <Option>Option1</Option>
+            <Option>Option2</Option>
+        </Field>
+    </Plugin>
+</Plugins>
