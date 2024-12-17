@@ -1,0 +1,160 @@
+public abstract class PluginBase
+{
+    public string Name { get; set; }
+    public abstract void Execute(Dictionary<string, object> parameters);
+}
+
+
+
+
+public class SamplePlugin : PluginBase
+{
+    public SamplePlugin()
+    {
+        Name = "Sample Plugin";
+    }
+
+    public override void Execute(Dictionary<string, object> parameters)
+    {
+        // Implement plugin-specific logic here
+        Console.WriteLine("SamplePlugin executed with parameters:");
+        foreach (var param in parameters)
+        {
+            Console.WriteLine($"{param.Key}: {param.Value}");
+        }
+    }
+}
+
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+
+public class PluginManager
+{
+    private readonly string _pluginDirectory;
+
+    public PluginManager(string pluginDirectory)
+    {
+        _pluginDirectory = pluginDirectory;
+    }
+
+    public List<string> LoadPluginNames()
+    {
+        var pluginNames = new List<string>();
+
+        if (!Directory.Exists(_pluginDirectory))
+            return pluginNames;
+
+        var pluginFiles = Directory.GetFiles(_pluginDirectory, "*.dll");
+
+        foreach (var file in pluginFiles)
+        {
+            try
+            {
+                var assembly = Assembly.LoadFrom(file);
+                var pluginType = assembly.GetTypes()
+                    .FirstOrDefault(t => typeof(PluginBase).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
+
+                if (pluginType != null)
+                {
+                    pluginNames.Add(pluginType.Name);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to load plugin from {file}: {ex.Message}");
+            }
+        }
+
+        return pluginNames;
+    }
+
+    public PluginBase LoadPlugin(string pluginName)
+    {
+        if (!Directory.Exists(_pluginDirectory))
+            return null;
+
+        var pluginFile = Directory.GetFiles(_pluginDirectory, $"{pluginName}.dll").FirstOrDefault();
+        if (pluginFile == null)
+            return null;
+
+        try
+        {
+            var assembly = Assembly.LoadFrom(pluginFile);
+            var pluginType = assembly.GetTypes()
+                .FirstOrDefault(t => typeof(PluginBase).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
+
+            if (pluginType != null)
+            {
+                return (PluginBase)Activator.CreateInstance(pluginType);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to load plugin {pluginName}: {ex.Message}");
+        }
+
+        return null;
+    }
+}
+
+
+
+
+public partial class MainForm : Form
+{
+    private readonly PluginManager _pluginManager;
+
+    public MainForm()
+    {
+        InitializeComponent();
+        _pluginManager = new PluginManager("path_to_plugins_directory");
+        LoadPluginNames();
+    }
+
+    private void LoadPluginNames()
+    {
+        var pluginNames = _pluginManager.LoadPluginNames();
+        comboBoxPlugins.DataSource = pluginNames;
+    }
+
+    private void comboBoxPlugins_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        var selectedPluginName = comboBoxPlugins.SelectedItem.ToString();
+        var plugin = _pluginManager.LoadPlugin(selectedPluginName);
+
+        if (plugin != null)
+        {
+            // Update UI based on plugin's input fields
+            // For example, if the plugin has a method to get input fields:
+            var inputFields = plugin.GetInputFields();
+            // Update your form controls accordingly
+        }
+    }
+
+    private void buttonVerifyPlugin_Click(object sender, EventArgs e)
+    {
+        var selectedPluginName = comboBoxPlugins.SelectedItem.ToString();
+        var plugin = _pluginManager.LoadPlugin(selectedPluginName);
+
+        if (plugin != null)
+        {
+            // Collect input values from the UI
+            var parameters = new Dictionary<string, object>
+            {
+                { "Parameter1", textBoxParameter1.Text },
+                { "Parameter2", textBoxParameter2.Text }
+                // Add other parameters as needed
+            };
+
+            // Execute the plugin's method
+            plugin.Execute(parameters);
+        }
+    }
+}
