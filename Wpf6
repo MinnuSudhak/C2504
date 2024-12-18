@@ -415,3 +415,71 @@ namespace DynamicPluginApp
     }
 }
 
+
+
+
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Windows;
+using System.Windows.Controls;
+
+namespace DynamicPluginApp
+{
+    public partial class MainWindow : Window
+    {
+        private string pluginFolder = @"C:\Path\To\Your\ImageProcess"; // Path to your ImageProcess folder
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            LoadPluginNamesFromFolders();
+        }
+
+        private void LoadPluginNamesFromFolders()
+        {
+            try
+            {
+                if (!Directory.Exists(pluginFolder))
+                {
+                    MessageBox.Show($"Plugin folder not found: {pluginFolder}");
+                    return;
+                }
+
+                // Get all subdirectories in the ImageProcess folder
+                var pluginDirectories = Directory.GetDirectories(pluginFolder);
+
+                // Use folder names as plugin names
+                var pluginNames = new List<string>();
+                foreach (var directory in pluginDirectories)
+                {
+                    pluginNames.Add(new DirectoryInfo(directory).Name);
+                }
+
+                // Populate ComboBox with plugin names
+                PluginComboBox.ItemsSource = pluginNames;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading plugins: {ex.Message}");
+            }
+        }
+
+        private void PluginComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PluginComboBox.SelectedItem == null) return;
+
+            string selectedPluginName = PluginComboBox.SelectedItem.ToString();
+            string selectedPluginPath = Path.Combine(pluginFolder, selectedPluginName);
+
+            MessageBox.Show($"Selected Plugin: {selectedPluginName}\nPath: {selectedPluginPath}");
+            
+            // Perform additional operations here based on the selected plugin folder
+        }
+    }
+}
+
