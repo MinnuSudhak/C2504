@@ -172,3 +172,90 @@ namespace DynamicPluginApp
         }
     }
 }
+
+
+
+
+
+
+
+using System.Collections.Generic;
+using System.Linq;
+using System.Xml.Linq;
+
+namespace DynamicPluginApp
+{
+    public class PluginManager
+    {
+        private const string XmlFilePath = "PluginsConfig.xml";
+
+        public PluginManager()
+        {
+            if (!File.Exists(XmlFilePath))
+            {
+                var doc = new XDocument(new XElement("Plugins"));
+                doc.Save(XmlFilePath);
+            }
+        }
+
+        public void UpdateXmlWithDiscoveredPlugins(List<string> pluginNames)
+        {
+            XDocument xmlDoc = XDocument.Load(XmlFilePath);
+
+            foreach (var pluginName in pluginNames)
+            {
+                var existingPlugin = xmlDoc.Descendants("Plugin")
+                                           .FirstOrDefault(p => p.Attribute("Name").Value == pluginName);
+                if (existingPlugin == null)
+                {
+                    xmlDoc.Root.Add(new XElement("Plugin", new XAttribute("Name", pluginName)));
+                }
+            }
+
+            xmlDoc.Save(XmlFilePath);
+        }
+
+        public List<string> LoadPluginNames()
+        {
+            XDocument xmlDoc = XDocument.Load(XmlFilePath);
+            return xmlDoc.Descendants("Plugin")
+                         .Select(p => p.Attribute("Name").Value)
+                         .ToList();
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+public MainWindow()
+{
+    InitializeComponent();
+
+    _pluginManager = new PluginManager();
+    _pluginDiscovery = new PluginDiscovery();
+
+    // Discover plugins and update the XML
+    var discoveredPlugins = _pluginDiscovery.DiscoverPlugins();
+    _pluginManager.UpdateXmlWithDiscoveredPlugins(discoveredPlugins);
+
+    // Load plugins into the ComboBox
+    LoadPluginsIntoComboBox();
+}
+
+private void LoadPluginsIntoComboBox()
+{
+    var pluginNames = _pluginManager.LoadPluginNames();
+    PluginComboBox.ItemsSource = pluginNames;
+
+    if (pluginNames.Count == 0)
+    {
+        MessageBox.Show("No plugins found. Add .dll files to the Plugins folder.");
+    }
+}
+
