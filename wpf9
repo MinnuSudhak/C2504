@@ -450,3 +450,98 @@ private void ExecutePlugin_Click(object sender, RoutedEventArgs e)
 }
 
 
+
+
+
+
+
+
+
+
+
+private void VerifyPlugin_Click(object sender, RoutedEventArgs e)
+{
+    if (PluginComboBox.SelectedItem == null)
+    {
+        MessageBox.Show("Please select a plugin.");
+        return;
+    }
+
+    string selectedPluginName = PluginComboBox.SelectedItem.ToString();
+    var pluginPath = Path.Combine(pluginFolder, selectedPluginName, $"{selectedPluginName}.dll");
+
+    if (File.Exists(pluginPath))
+    {
+        // Load the plugin assembly and get the main class
+        var assembly = Assembly.LoadFrom(pluginPath);
+        var pluginType = assembly.GetTypes().FirstOrDefault();
+        if (pluginType != null)
+        {
+            // Create an instance of the plugin
+            var pluginInstance = Activator.CreateInstance(pluginType);
+
+            // Iterate through input fields and set the values
+            foreach (var child in InputFieldsPanel.Children.OfType<StackPanel>())
+            {
+                var label = child.Children.OfType<TextBlock>().FirstOrDefault()?.Text;
+
+                if (label != null)
+                {
+                    var property = pluginType.GetProperty(label);
+                    if (property != null)
+                    {
+                        var textBox = child.Children.OfType<TextBox>().FirstOrDefault();
+                        var checkBox = child.Children.OfType<CheckBox>().FirstOrDefault();
+
+                        if (textBox != null)
+                        {
+                            // Handle setting the property with the correct value
+                            object value = null;
+
+                            try
+                            {
+                                if (property.PropertyType == typeof(bool))
+                                {
+                                    value = bool.Parse(textBox.Text);
+                                }
+                                else if (property.PropertyType == typeof(int))
+                                {
+                                    value = int.Parse(textBox.Text);
+                                }
+                                else if (property.PropertyType == typeof(double))
+                                {
+                                    value = double.Parse(textBox.Text);
+                                }
+                                else if (property.PropertyType == typeof(DateTime))
+                                {
+                                    value = DateTime.Parse(textBox.Text);
+                                }
+                                else
+                                {
+                                    value = Convert.ChangeType(textBox.Text, property.PropertyType);
+                                }
+
+                                property.SetValue(pluginInstance, value);
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show($"Error setting property '{property.Name}': {ex.Message}");
+                                return;
+                            }
+                        }
+                        else if (checkBox != null)
+                        {
+                            // Set boolean values from CheckBox
+                            object value = checkBox.IsChecked ?? false;
+                            property.SetValue(pluginInstance, value);
+                        }
+                    }
+                }
+            }
+
+            // At this point, pluginInstance has the properties set based on user input
+            // Now you can call the methods on the pluginInstance (e.g., perform calculations or image processing)
+        }
+    }
+}
+
