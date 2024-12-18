@@ -222,3 +222,129 @@ private void VerifyPlugin_Click(object sender, RoutedEventArgs e)
     // Pass inputValues to the plugin logic
     MessageBox.Show($"Inputs for {selectedPlugin}: {string.Join(", ", inputValues.Select(kvp => $"{kvp.Key}: {kvp.Value}"))}");
 }
+
+
+
+
+
+
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+
+namespace DynamicPluginApp
+{
+    public partial class MainWindow : Window
+    {
+        private PluginManager _pluginManager;
+        private PluginDiscovery _pluginDiscovery;
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            _pluginManager = new PluginManager();
+            _pluginDiscovery = new PluginDiscovery();
+
+            // Discover plugins and update XML
+            var discoveredPlugins = _pluginDiscovery.DiscoverPlugins();
+            _pluginManager.UpdateXmlWithDiscoveredPlugins(discoveredPlugins);
+
+            // Load plugins into ComboBox
+            LoadPluginsIntoComboBox();
+        }
+
+        private void LoadPluginsIntoComboBox()
+        {
+            var pluginNames = _pluginManager.LoadPluginNames();
+            PluginComboBox.ItemsSource = pluginNames;
+        }
+
+        private void PluginComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PluginComboBox.SelectedItem == null) return;
+
+            string selectedPlugin = PluginComboBox.SelectedItem.ToString();
+            UpdateUIForSelectedPlugin(selectedPlugin);
+        }
+
+        private void UpdateUIForSelectedPlugin(string pluginName)
+        {
+            InputFieldsPanel.Children.Clear();
+            var fields = _pluginManager.LoadPluginFields(pluginName);
+
+            foreach (var field in fields)
+            {
+                if (field.Type == "text" || field.Type == "number")
+                {
+                    var textBox = new TextBox { Name = field.Label, Margin = new Thickness(5) };
+                    InputFieldsPanel.Children.Add(new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Children =
+                        {
+                            new TextBlock { Text = field.Label, Width = 100 },
+                            textBox
+                        }
+                    });
+                }
+                else if (field.Type == "dropdown" && field.Options != null)
+                {
+                    var comboBox = new ComboBox
+                    {
+                        Name = field.Label,
+                        ItemsSource = field.Options,
+                        Margin = new Thickness(5)
+                    };
+                    InputFieldsPanel.Children.Add(new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Children =
+                        {
+                            new TextBlock { Text = field.Label, Width = 100 },
+                            comboBox
+                        }
+                    });
+                }
+            }
+        }
+
+        private void VerifyPlugin_Click(object sender, RoutedEventArgs e)
+        {
+            if (PluginComboBox.SelectedItem == null)
+            {
+                MessageBox.Show("Please select a plugin.");
+                return;
+            }
+
+            string selectedPlugin = PluginComboBox.SelectedItem.ToString();
+            var fields = _pluginManager.LoadPluginFields(selectedPlugin);
+
+            var inputValues = new Dictionary<string, string>();
+            foreach (var field in fields)
+            {
+                var inputControl = InputFieldsPanel.Children
+                                                   .OfType<StackPanel>()
+                                                   .FirstOrDefault(sp => sp.Children.OfType<TextBlock>().Any(tb => tb.Text == field.Label));
+
+                if (field.Type == "text" || field.Type == "number")
+                {
+                    var textBox = inputControl?.Children.OfType<TextBox>().FirstOrDefault();
+                    inputValues[field.Label] = textBox?.Text;
+                }
+                else if (field.Type == "dropdown")
+                {
+                    var comboBox = inputControl?.Children.OfType<ComboBox>().FirstOrDefault();
+                    inputValues[field.Label] = comboBox?.SelectedItem?.ToString();
+                }
+            }
+
+            MessageBox.Show($"Inputs for {selectedPlugin}: {string.Join(", ", inputValues.Select(kvp => $"{kvp.Key}: {kvp.Value}"))}");
+        }
+    }
+}
