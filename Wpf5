@@ -449,3 +449,58 @@ public class PluginField
     public string Type { get; set; }
     public List<string> Options { get; set; }
 }
+
+
+
+
+
+
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+
+public class PluginDiscovery
+{
+    private const string PluginFolder = "Plugins";
+
+    public List<PluginMetadata> DiscoverPlugins()
+    {
+        var plugins = new List<PluginMetadata>();
+
+        if (Directory.Exists(PluginFolder))
+        {
+            var pluginFiles = Directory.GetFiles(PluginFolder, "*.dll");
+
+            foreach (var file in pluginFiles)
+            {
+                var assembly = Assembly.LoadFrom(file);
+                var pluginTypes = assembly.GetTypes()
+                                          .Where(t => typeof(IPlugin).IsAssignableFrom(t) && !t.IsInterface);
+
+                foreach (var type in pluginTypes)
+                {
+                    var pluginInstance = (IPlugin)Activator.CreateInstance(type);
+
+                    plugins.Add(new PluginMetadata
+                    {
+                        Name = pluginInstance.Name,
+                        Fields = pluginInstance.GetInputFields().Select(field => new PluginField
+                        {
+                            Label = field.Key,
+                            Type = field.Value
+                        }).ToList()
+                    });
+                }
+            }
+        }
+
+        return plugins;
+    }
+}
+
