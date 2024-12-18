@@ -230,3 +230,39 @@ namespace DynamicPluginApp
 </Window>
 
 
+
+
+
+
+
+
+
+
+private void BrowseFile_Click(object sender, RoutedEventArgs e)
+        {
+            // Open file dialog to browse files
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Title = "Select a File";
+            openFileDialog.Filter = "All Files (*.*)|*.*";
+
+            // Show dialog and if file is selected, set the text box value
+            if (openFileDialog.ShowDialog() == true)
+            {
+                FilePathTextBox.Text = openFileDialog.FileName;
+            }
+        }
+
+        private void DisplayFile_Click(object sender, RoutedEventArgs e)
+        {
+            string filePath = FilePathTextBox.Text;
+
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+            {
+                MessageBox.Show("Please select a valid file.");
+                return;
+            }
+var displayWindow = new DisplayWindow(filePath);
+            displayWindow.Show();
+        }
+    }
+}
