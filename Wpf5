@@ -348,3 +348,104 @@ namespace DynamicPluginApp
         }
     }
 }
+
+
+
+
+
+
+using System.Collections.Generic;
+using System.Xml.Linq;
+
+public class PluginManager
+{
+    private const string XmlFilePath = "Plugins.xml";
+
+    public void UpdateXmlWithDiscoveredPlugins(List<PluginMetadata> plugins)
+    {
+        // Load or create the XML file
+        XElement root;
+        if (System.IO.File.Exists(XmlFilePath))
+        {
+            root = XElement.Load(XmlFilePath);
+        }
+        else
+        {
+            root = new XElement("Plugins");
+        }
+
+        // Update XML with discovered plugins
+        foreach (var plugin in plugins)
+        {
+            // Check if plugin already exists in the XML
+            var existingPlugin = root.Elements("Plugin")
+                                      .FirstOrDefault(p => p.Attribute("Name")?.Value == plugin.Name);
+
+            if (existingPlugin == null)
+            {
+                // Add new plugin to XML
+                var pluginElement = new XElement("Plugin",
+                    new XAttribute("Name", plugin.Name),
+                    plugin.Fields.Select(field =>
+                        new XElement("Field",
+                            new XAttribute("Label", field.Label),
+                            new XAttribute("Type", field.Type),
+                            field.Options != null
+                                ? new XElement("Options", field.Options.Select(o => new XElement("Option", o)))
+                                : null
+                        )
+                    )
+                );
+
+                root.Add(pluginElement);
+            }
+        }
+
+        // Save the updated XML
+        root.Save(XmlFilePath);
+    }
+
+    public List<string> LoadPluginNames()
+    {
+        if (!System.IO.File.Exists(XmlFilePath)) return new List<string>();
+
+        var root = XElement.Load(XmlFilePath);
+        return root.Elements("Plugin")
+                   .Select(p => p.Attribute("Name")?.Value)
+                   .Where(name => !string.IsNullOrEmpty(name))
+                   .ToList();
+    }
+
+    public List<PluginField> LoadPluginFields(string pluginName)
+    {
+        if (!System.IO.File.Exists(XmlFilePath)) return new List<PluginField>();
+
+        var root = XElement.Load(XmlFilePath);
+        var plugin = root.Elements("Plugin")
+                         .FirstOrDefault(p => p.Attribute("Name")?.Value == pluginName);
+
+        if (plugin == null) return new List<PluginField>();
+
+        return plugin.Elements("Field")
+                     .Select(f => new PluginField
+                     {
+                         Label = f.Attribute("Label")?.Value,
+                         Type = f.Attribute("Type")?.Value,
+                         Options = f.Element("Options")?.Elements("Option").Select(o => o.Value).ToList()
+                     })
+                     .ToList();
+    }
+}
+
+public class PluginMetadata
+{
+    public string Name { get; set; }
+    public List<PluginField> Fields { get; set; }
+}
+
+public class PluginField
+{
+    public string Label { get; set; }
+    public string Type { get; set; }
+    public List<string> Options { get; set; }
+}
