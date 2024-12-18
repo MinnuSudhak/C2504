@@ -1,0 +1,240 @@
+using Microsoft.Win32;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Controls;
+
+
+namespace PluginCreatorFeasibility
+{
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        private TemplateCreationManager _templateCreationManager;
+
+
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            _templateCreationManager = new TemplateCreationManager();
+
+            LoadPluginNamesFromFolders();
+
+        }
+
+        private string pluginFolder = @"C:\Users\1069736\Documents\PluginCreatorFeasibility\PluginCreatorFeasibility\ImageProcess\Plugin"; // Path to your ImageProcess folder
+
+        private void CreateProject_Click(object sender, RoutedEventArgs e)
+        {
+            string result = _templateCreationManager.CreateProject(prj_textbox.Text);
+            if (string.IsNullOrEmpty(result))
+            {
+                MessageBox.Show($"{prj_textbox.Text} Project Created");
+            }
+            else
+            {
+                MessageBox.Show($"{prj_textbox.Text} {result}");
+            }
+        }
+
+
+
+
+        private void LoadPluginNamesFromFolders()
+        {
+            try
+            {
+                if (!Directory.Exists(pluginFolder))
+                {
+                    MessageBox.Show($"Plugin folder not found: {pluginFolder}");
+                    return;
+                }
+
+                // Get all subdirectories in the ImageProcess folder
+                var pluginDirectories = Directory.GetDirectories(pluginFolder);
+                var pluginNames = pluginDirectories.Select(dir => new DirectoryInfo(dir).Name).ToList();
+                PluginComboBox.ItemsSource = pluginNames;
+               
+
+                // Populate ComboBox with plugin names
+                PluginComboBox.ItemsSource = pluginNames;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading plugins: {ex.Message}");
+            }
+        }
+
+        private void PluginComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PluginComboBox.SelectedItem == null) return;
+
+            string selectedPluginName = PluginComboBox.SelectedItem.ToString();
+            string selectedPluginPath = Path.Combine(pluginFolder, selectedPluginName, $"{selectedPluginName}.dll");
+            if (File.Exists(selectedPluginPath))
+            {
+                // Read plugin fields and update UI
+                var pluginFields = GetPluginFields(selectedPluginPath);
+                UpdateUIForFields(pluginFields);
+            }
+            else
+            {
+                MessageBox.Show($"DLL file for {selectedPluginName} not found.");
+            }
+        }
+        private Dictionary<string, string> GetPluginFields(string pluginPath)
+        {
+            var fields = new Dictionary<string, string>();
+
+            try
+            {
+                var assembly = Assembly.LoadFrom(pluginPath);
+                var pluginType = assembly.GetTypes().FirstOrDefault(); // Assuming one main class per plugin
+
+                if (pluginType != null)
+                {
+                    foreach (var property in pluginType.GetProperties())
+                    {
+                        fields[property.Name] = property.PropertyType.Name; // Field name and type
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading plugin fields: {ex.Message}");
+            }
+
+            return fields;
+        }
+
+        // Dynamically update the UI with input fields
+        private void UpdateUIForFields(Dictionary<string, string> fields)
+        {
+            InputFieldsPanel.Children.Clear(); // Clear existing fields
+
+            foreach (var field in fields)
+            {
+                var fieldType = field.Value.ToLower();
+
+                if (fieldType == "string")
+                {
+                    // TextBox for string input
+                    var textBox = new TextBox { Name = field.Key, Margin = new Thickness(5) };
+                    InputFieldsPanel.Children.Add(new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Children =
+                        {
+                            new TextBlock { Text = field.Key, Width = 150 },
+                            textBox
+                        }
+                    });
+                }
+                else if (fieldType == "int" || fieldType == "double" || fieldType == "float")
+                {
+                    // TextBox for numeric input
+                    var textBox = new TextBox { Name = field.Key, Margin = new Thickness(5) };
+                    InputFieldsPanel.Children.Add(new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Children =
+                        {
+                            new TextBlock { Text = field.Key, Width = 150 },
+                            textBox
+                        }
+                    });
+                }
+                else if (fieldType == "bool")
+                {
+                    // CheckBox for boolean input
+                    var checkBox = new CheckBox { Name = field.Key, Margin = new Thickness(5) };
+                    InputFieldsPanel.Children.Add(new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Children =
+                        {
+                            new TextBlock { Text = field.Key, Width = 150 },
+                            checkBox
+                        }
+                    });
+                }
+            }
+        }
+
+        // Collect user inputs dynamically
+        private void VerifyPlugin_Click(object sender, RoutedEventArgs e)
+        {
+            if (PluginComboBox.SelectedItem == null)
+            {
+                MessageBox.Show("Please select a plugin.");
+                return;
+            }
+
+            string selectedPluginName = PluginComboBox.SelectedItem.ToString();
+            var inputValues = new Dictionary<string, string>();
+
+            foreach (var child in InputFieldsPanel.Children.OfType<StackPanel>())
+            {
+                var label = child.Children.OfType<TextBlock>().FirstOrDefault()?.Text;
+
+                if (label != null)
+                {
+                    if (child.Children.OfType<TextBox>().Any())
+                    {
+                        var textBox = child.Children.OfType<TextBox>().FirstOrDefault();
+                        inputValues[label] = textBox?.Text;
+                    }
+                    else if (child.Children.OfType<CheckBox>().Any())
+                    {
+                        var checkBox = child.Children.OfType<CheckBox>().FirstOrDefault();
+                        inputValues[label] = checkBox?.IsChecked.ToString();
+                    }
+                }
+            }
+
+            MessageBox.Show($"Inputs for {selectedPluginName}: {string.Join(", ", inputValues.Select(kvp => $"{kvp.Key}: {kvp.Value}"))}");
+        }
+
+      
+        private void BrowseFile_Click(object sender, RoutedEventArgs e)
+        {
+            // Open file dialog to browse files
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Title = "Select a File";
+            openFileDialog.Filter = "All Files (*.*)|*.*";
+
+            // Show dialog and if file is selected, set the text box value
+            if (openFileDialog.ShowDialog() == true)
+            {
+                FilePathTextBox.Text = openFileDialog.FileName;
+            }
+        }
+
+        private void DisplayFile_Click(object sender, RoutedEventArgs e)
+        {
+            string filePath = FilePathTextBox.Text;
+
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+            {
+                MessageBox.Show("Please select a valid file.");
+                return;
+            }
+            var displayWindow = new DisplayWindow(filePath);
+            displayWindow.Show();
+        }
+    }
+}
+
+
+
+
+    
+
+
+
