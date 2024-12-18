@@ -316,3 +316,137 @@ private void VerifyPlugin_Click(object sender, RoutedEventArgs e)
 
 
 
+
+
+
+
+
+private void PluginComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+{
+    if (PluginComboBox.SelectedItem == null) return;
+
+    string selectedPluginName = PluginComboBox.SelectedItem.ToString();
+    string pluginPath = Path.Combine(pluginFolder, selectedPluginName, $"{selectedPluginName}.dll");
+
+    if (!File.Exists(pluginPath))
+    {
+        MessageBox.Show($"DLL file for {selectedPluginName} not found.");
+        return;
+    }
+
+    try
+    {
+        // Load the plugin assembly
+        var assembly = Assembly.LoadFrom(pluginPath);
+        var pluginType = assembly.GetTypes().FirstOrDefault();
+
+        if (pluginType != null)
+        {
+            // Generate input fields for all public properties
+            var properties = pluginType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            InputFieldsPanel.Children.Clear();
+
+            foreach (var property in properties)
+            {
+                var stackPanel = new StackPanel { Orientation = Orientation.Horizontal };
+
+                // Label for property name
+                stackPanel.Children.Add(new TextBlock
+                {
+                    Text = property.Name,
+                    Margin = new Thickness(5)
+                });
+
+                // TextBox for input
+                stackPanel.Children.Add(new TextBox
+                {
+                    Name = property.Name,
+                    Width = 150,
+                    Margin = new Thickness(5)
+                });
+
+                InputFieldsPanel.Children.Add(stackPanel);
+            }
+
+            // Store the plugin type for method execution
+            InputFieldsPanel.Tag = pluginType;
+        }
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"Error loading plugin: {ex.Message}");
+    }
+}
+
+
+
+
+
+
+
+
+private void ExecutePlugin_Click(object sender, RoutedEventArgs e)
+{
+    if (PluginComboBox.SelectedItem == null)
+    {
+        MessageBox.Show("Please select a plugin.");
+        return;
+    }
+
+    string selectedPluginName = PluginComboBox.SelectedItem.ToString();
+    string pluginPath = Path.Combine(pluginFolder, selectedPluginName, $"{selectedPluginName}.dll");
+
+    if (!File.Exists(pluginPath))
+    {
+        MessageBox.Show($"DLL file for {selectedPluginName} not found.");
+        return;
+    }
+
+    try
+    {
+        // Load the plugin assembly
+        var assembly = Assembly.LoadFrom(pluginPath);
+        var pluginType = InputFieldsPanel.Tag as Type;
+
+        if (pluginType != null)
+        {
+            // Create an instance of the plugin
+            var pluginInstance = Activator.CreateInstance(pluginType);
+
+            // Set property values from input fields
+            foreach (var property in pluginType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                var textBox = InputFieldsPanel.Children
+                    .OfType<StackPanel>()
+                    .FirstOrDefault(sp => sp.Children.OfType<TextBlock>().Any(tb => tb.Text == property.Name))
+                    ?.Children.OfType<TextBox>().FirstOrDefault();
+
+                if (textBox != null)
+                {
+                    object value = Convert.ChangeType(textBox.Text, property.PropertyType);
+                    property.SetValue(pluginInstance, value);
+                }
+            }
+
+            // Execute all public methods
+            var methods = pluginType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+            var results = new List<string>();
+
+            foreach (var method in methods)
+            {
+                var result = method.Invoke(pluginInstance, null); // Assuming no method parameters
+                results.Add($"{method.Name}: {result}");
+            }
+
+            // Display results in a new window
+            var resultWindow = new ResultWindow(string.Join(Environment.NewLine, results));
+            resultWindow.Show();
+        }
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"Error executing plugin: {ex.Message}");
+    }
+}
+
+
