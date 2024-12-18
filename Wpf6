@@ -259,3 +259,159 @@ private void LoadPluginsIntoComboBox()
     }
 }
 
+
+
+
+
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Controls;
+using PluginInterface;  // Make sure to reference your IPlugin interface
+
+namespace DynamicPluginApp
+{
+    public partial class MainWindow : Window
+    {
+        private List<IPlugin> _discoveredPlugins;
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            DiscoverAndLoadPlugins();
+        }
+
+        private void DiscoverAndLoadPlugins()
+        {
+            var pluginFolder = @"C:\Path\To\Your\ImageProcess"; // Set the path to your plugins folder
+            var pluginFiles = Directory.GetFiles(pluginFolder, "*.dll"); // Get all DLL files
+
+            _discoveredPlugins = new List<IPlugin>();
+
+            foreach (var file in pluginFiles)
+            {
+                try
+                {
+                    // Load the assembly (DLL)
+                    var assembly = Assembly.LoadFrom(file);
+
+                    // Find types that implement IPlugin
+                    var pluginType = assembly.GetTypes().FirstOrDefault(t => typeof(IPlugin).IsAssignableFrom(t));
+
+                    if (pluginType != null)
+                    {
+                        // Create an instance of the plugin
+                        var pluginInstance = (IPlugin)Activator.CreateInstance(pluginType);
+                        _discoveredPlugins.Add(pluginInstance);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error loading plugin from {file}: {ex.Message}");
+                }
+            }
+
+            // Populate ComboBox with plugin names (could use plugin.Name or the file name)
+            PluginComboBox.ItemsSource = _discoveredPlugins.Select(p => p.Name).ToList();
+        }
+
+        private void PluginComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PluginComboBox.SelectedItem == null) return;
+
+            string selectedPluginName = PluginComboBox.SelectedItem.ToString();
+            var selectedPlugin = _discoveredPlugins.FirstOrDefault(p => p.Name == selectedPluginName);
+
+            if (selectedPlugin != null)
+            {
+                UpdateUIForPlugin(selectedPlugin);
+            }
+        }
+
+        private void UpdateUIForPlugin(IPlugin plugin)
+        {
+            InputFieldsPanel.Children.Clear();
+            var fields = plugin.GetInputFields();
+
+            foreach (var field in fields)
+            {
+                if (field.Type == "text" || field.Type == "number")
+                {
+                    var textBox = new TextBox { Name = field.Label, Margin = new Thickness(5) };
+                    InputFieldsPanel.Children.Add(new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Children =
+                        {
+                            new TextBlock { Text = field.Label, Width = 100 },
+                            textBox
+                        }
+                    });
+                }
+                else if (field.Type == "dropdown" && field.Options != null)
+                {
+                    var comboBox = new ComboBox
+                    {
+                        Name = field.Label,
+                        ItemsSource = field.Options,
+                        Margin = new Thickness(5)
+                    };
+                    InputFieldsPanel.Children.Add(new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Children =
+                        {
+                            new TextBlock { Text = field.Label, Width = 100 },
+                            comboBox
+                        }
+                    });
+                }
+            }
+        }
+
+        private void VerifyPlugin_Click(object sender, RoutedEventArgs e)
+        {
+            if (PluginComboBox.SelectedItem == null)
+            {
+                MessageBox.Show("Please select a plugin.");
+                return;
+            }
+
+            string selectedPluginName = PluginComboBox.SelectedItem.ToString();
+            var selectedPlugin = _discoveredPlugins.FirstOrDefault(p => p.Name == selectedPluginName);
+
+            if (selectedPlugin == null) return;
+
+            var fields = selectedPlugin.GetInputFields();
+            var inputValues = new Dictionary<string, string>();
+
+            foreach (var field in fields)
+            {
+                var inputControl = InputFieldsPanel.Children
+                                                   .OfType<StackPanel>()
+                                                   .FirstOrDefault(sp => sp.Children.OfType<TextBlock>().Any(tb => tb.Text == field.Label));
+
+                if (field.Type == "text" || field.Type == "number")
+                {
+                    var textBox = inputControl?.Children.OfType<TextBox>().FirstOrDefault();
+                    inputValues[field.Label] = textBox?.Text;
+                }
+                else if (field.Type == "dropdown")
+                {
+                    var comboBox = inputControl?.Children.OfType<ComboBox>().FirstOrDefault();
+                    inputValues[field.Label] = comboBox?.SelectedItem?.ToString();
+                }
+            }
+
+            MessageBox.Show($"Inputs for {selectedPluginName}: {string.Join(", ", inputValues.Select(kvp => $"{kvp.Key}: {kvp.Value}"))}");
+        }
+    }
+}
+
