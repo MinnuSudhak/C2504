@@ -1,0 +1,417 @@
+using Microsoft.Win32;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Interop;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+
+namespace PluginCreatorFeasibility
+{
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        private TemplateCreationManager _templateCreationManager;
+        private DisplayImage _displayImage;
+        Window imageWindow = new Window();
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            _templateCreationManager = new TemplateCreationManager();
+            _displayImage = new DisplayImage();
+            SetParentWindowSettings();
+            imageWindow.Loaded += _imageWindow_Loaded;
+            imageWindow.Activate();
+            imageWindow.Show();
+            LoadPluginNamesFromFolders();
+        }
+        private string pluginFolder = @"C:\Users\1069736\Documents\PluginCreatorFeasibility1\PluginCreatorFeasibility\PluginCreatorFeasibility\ImageProcess\Plugin"; // Path to your ImageProcess folder
+        private void _imageWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            _displayImage.SetUpDisplay(new WindowInteropHelper(imageWindow).Handle);
+        }
+
+        private void CreateProject_Click(object sender, RoutedEventArgs e)
+        {
+            string result = _templateCreationManager.CreateProject(prj_textbox.Text);
+            if (string.IsNullOrEmpty(result))
+            {
+                MessageBox.Show($"{prj_textbox.Text} Project Created");
+            }
+            else
+            {
+                MessageBox.Show($"{prj_textbox.Text} {result}");
+            }
+        }
+
+        private void ImagePathBrowse_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog folderBrowser = new OpenFileDialog();
+            // Set validate names and check file exists to false otherwise windows will
+            // not let you select "Folder Selection."
+            folderBrowser.ValidateNames = false;
+            folderBrowser.CheckFileExists = false;
+            folderBrowser.CheckPathExists = true;
+            folderBrowser.Filter = $"Raw Files| *.raw";
+            // Always default to Folder Selection.
+            folderBrowser.FileName = "Folder Selection.";
+            if (folderBrowser.ShowDialog() == true)
+            {
+                imagePath.Text = folderBrowser.FileName;
+            }
+        }
+
+        private void LoadImage_Click(object sender, RoutedEventArgs e)
+        {
+            _displayImage.LoadImage(imagePath.Text);
+            //DisplayImage(imagePath.Text);
+        }
+
+        private void SetParentWindowSettings()
+        {
+            imageWindow.ResizeMode = System.Windows.ResizeMode.NoResize;
+            imageWindow.WindowState = System.Windows.WindowState.Normal;
+            imageWindow.Name = "ImageWindow";
+            imageWindow.Title = "ImageWindow";
+            imageWindow.Background = Brushes.Transparent;
+            imageWindow.Height = 700;
+            imageWindow.Width = 700;
+        }
+
+        private void PluginExecution_PreviewMouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            imageWindow.Close();
+        }
+
+        private void LoadPluginNamesFromFolders()
+        {
+            try
+            {
+                if (!Directory.Exists(pluginFolder))
+                {
+                    MessageBox.Show($"Plugin folder not found: {pluginFolder}");
+                    return;
+                }
+
+                // Get all subdirectories in the ImageProcess folder
+                var pluginDirectories = Directory.GetDirectories(pluginFolder);
+                var pluginNames = pluginDirectories.Select(dir => new DirectoryInfo(dir).Name).ToList();
+                PluginComboBox.ItemsSource = pluginNames;
+
+
+                // Populate ComboBox with plugin names
+                PluginComboBox.ItemsSource = pluginNames;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading plugins: {ex.Message}");
+            }
+        }
+
+        private void PluginComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+            if (PluginComboBox.SelectedItem == null) return;
+
+            string selectedPluginName = PluginComboBox.SelectedItem.ToString();
+            string pluginPath = Path.Combine(pluginFolder, selectedPluginName, "bin", "Debug", $"{selectedPluginName}.dll");
+
+            if (!File.Exists(pluginPath))
+            {
+                MessageBox.Show($"DLL file for {selectedPluginName} not found.");
+                return;
+            }
+
+            try
+            {
+                // Load the plugin assembly
+                var assembly = Assembly.LoadFrom(pluginPath);
+                var pluginType = assembly.GetTypes().FirstOrDefault();
+
+                if (pluginType != null)
+                {
+                    // Generate input fields for all public properties
+                    var properties = pluginType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                    InputFieldsPanel.Children.Clear();
+
+                    foreach (var property in properties)
+                    {
+                        var stackPanel = new StackPanel { Orientation = Orientation.Horizontal };
+
+                        // Label for property name
+                        stackPanel.Children.Add(new TextBlock
+                        {
+                            Text = property.Name,
+                            Margin = new Thickness(5)
+                        });
+
+                        // TextBox for input
+                        stackPanel.Children.Add(new TextBox
+                        {
+                            Name = property.Name,
+                            Width = 150,
+                            Margin = new Thickness(5)
+                        });
+
+                        InputFieldsPanel.Children.Add(stackPanel);
+                    }
+
+                    // Store the plugin type for method execution
+                    InputFieldsPanel.Tag = pluginType;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading plugin: {ex.Message}");
+            }
+        }
+
+        // Dynamically update the UI with input fields
+        private void UpdateUIForFields(Dictionary<string, string> fields)
+        {
+            InputFieldsPanel.Children.Clear(); // Clear existing fields
+            InputFieldsPanel.Visibility = Visibility.Visible;
+            InputFieldsPanel.Width = double.NaN;
+            InputFieldsPanel.Height = double.NaN;
+
+            foreach (var field in fields)
+            {
+                var fieldType = field.Value.ToLower();
+                FrameworkElement inputElement = null;
+
+                if (fieldType == "string")
+                {
+                    // TextBox for string input
+                    var textBox = new TextBox { Name = $"{field.Key}_Input", Margin = new Thickness(5), Width = 200, };
+                    InputFieldsPanel.Children.Add(new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Children =
+                        {
+                            new TextBlock { Text = field.Key, Width = 150 },
+                            textBox
+                        }
+                    });
+                }
+                else if (fieldType == "int" || fieldType == "double" || fieldType == "float")
+                {
+                    // TextBox for numeric input
+                    //inputElement = new TextBox { Name = $"{field.Key}_Input", Margin = new Thickness(5),Width=200 };
+                    var textBox = new TextBox { Name = $"{field.Key}_Input", Margin = new Thickness(5) };
+                    InputFieldsPanel.Children.Add(new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Children =
+                        {
+                            new TextBlock { Text = field.Key, Width = 150 },
+                            textBox
+                        }
+                    });
+                }
+                else if (fieldType == "bool")
+                {
+                    // CheckBox for boolean input
+                    //inputElement = new CheckBox { Name = $"{field.Key}_Input", Margin = new Thickness(5),Width=200 };
+                    var checkBox = new CheckBox { Name = $"{field.Key}_Input", Margin = new Thickness(5) };
+                    InputFieldsPanel.Children.Add(new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Children =
+                        {
+                            new TextBlock { Text = field.Key, Width = 150 },
+                            checkBox
+                        }
+                    });
+                }
+                if (inputElement != null)
+                {
+                    InputFieldsPanel.Children.Add(new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Children =
+                        {
+                            new TextBlock{Text=field.Key,Width=150},inputElement
+                        }
+                    });
+                }
+            }
+            MessageBox.Show($"UI Updated with Fields:{string.Join(",", fields.Select(f => f.Key))}");
+        }
+
+        // Collect user inputs dynamically
+        private void VerifyPlugin_Click(object sender, RoutedEventArgs e)
+        {
+
+
+            ////MessageBox.Show($"Inputs for {selectedPluginName}: {string.Join(", ", inputValues.Select(kvp => $"{kvp.Key}: {kvp.Value}"))}");
+            if (PluginComboBox.SelectedItem == null)
+            {
+                MessageBox.Show("Please select a plugin.");
+                return;
+            }
+
+            string selectedPluginName = PluginComboBox.SelectedItem.ToString();
+            string pluginPath = Path.Combine(pluginFolder, selectedPluginName, "bin", "Debug", $"{selectedPluginName}.dll");
+
+            if (!File.Exists(pluginPath))
+            {
+                MessageBox.Show($"DLL file for {selectedPluginName} not found.");
+                return;
+            }
+
+            try
+            {
+                // Load the plugin assembly
+                var assembly = Assembly.LoadFrom(pluginPath);
+                var pluginType = InputFieldsPanel.Tag as Type;
+
+                if (pluginType != null)
+                {
+                    // Create an instance of the plugin
+                    var pluginInstance = Activator.CreateInstance(pluginType);
+
+
+                    foreach (var child in InputFieldsPanel.Children.OfType<StackPanel>())
+                    {
+                        var label = child.Children.OfType<TextBlock>().FirstOrDefault()?.Text;
+
+                        if (label != null)
+                        {
+                            var property = pluginType.GetProperty(label);
+                            if (property != null)
+                            {
+                                var textBox = child.Children.OfType<TextBox>().FirstOrDefault();
+                                var checkBox = child.Children.OfType<CheckBox>().FirstOrDefault();
+
+                                if (textBox != null)
+                                {
+                                    // Handle setting the property with the correct value
+                                    object value = null;
+
+                                    try
+                                    {
+                                        if (property.PropertyType == typeof(bool))
+                                        {
+                                            value = bool.Parse(textBox.Text);
+                                        }
+                                        else if (property.PropertyType == typeof(int))
+                                        {
+                                            value = int.Parse(textBox.Text);
+                                        }
+                                        else if (property.PropertyType == typeof(double))
+                                        {
+                                            value = double.Parse(textBox.Text);
+                                        }
+                                        else if (property.PropertyType == typeof(DateTime))
+                                        {
+                                            value = DateTime.Parse(textBox.Text);
+                                        }
+                                        else
+                                        {
+                                            value = Convert.ChangeType(textBox.Text, property.PropertyType);
+                                        }
+
+                                        property.SetValue(pluginInstance, value);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        MessageBox.Show($"Error setting property '{property.Name}': {ex.Message}");
+                                        return;
+                                    }
+                                }
+                                else if (checkBox != null)
+                                {
+                                    // Set boolean values from CheckBox
+                                    object value = checkBox.IsChecked ?? false;
+                                    property.SetValue(pluginInstance, value);
+                                }
+                            }
+                        }
+                    }
+                    //Execute all public methods
+                    var methods = pluginType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+                    var results = new List<string>();
+                    foreach (var method in methods)
+                    {
+                        var result = method.Invoke(pluginInstance, null); // Assuming no method parameters
+                        results.Add($"{method.Name}: {result}");
+                    }
+
+                    // Display results in a new window
+                    var resultWindow = new ExecutionWindow(string.Join(Environment.NewLine, results));
+                    resultWindow.Show();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error executing plugin: {ex.Message}");
+            }
+
+
+
+        }
+
+        private void ExecutePluginLogic(object pluginInstance, Type pluginType)
+        {
+            try
+            {
+                var resultWindow = new Window
+                {
+                    Title = "Plugin Execution Results",
+                    Width = 400,
+                    Height = 300,
+                    Content = new StackPanel()
+                };
+
+
+                var resultPanel = resultWindow.Content as StackPanel;
+
+                foreach (var method in pluginType.GetMethods(BindingFlags.Public | BindingFlags.Instance))
+                {
+                    if (method.GetParameters().Length == 0) // Only execute parameterless methods
+                    {
+                        try
+                        {
+                            var result = method.Invoke(pluginInstance, null);
+                            resultPanel.Children.Add(new TextBlock
+                            {
+                                Text = $"{method.Name}: {result}",
+                                Margin = new Thickness(5)
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            resultPanel.Children.Add(new TextBlock
+                            {
+                                Text = $"{method.Name}: Error - {ex.Message}",
+                                Margin = new Thickness(5),
+                                Foreground = System.Windows.Media.Brushes.Red
+                            });
+                        }
+                    }
+                }
+
+                resultWindow.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error executing plugin logic: {ex.Message}");
+            }
+        }
+       
+    }
+}
+
