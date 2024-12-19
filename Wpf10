@@ -1,0 +1,94 @@
+using System.Windows.Markup;
+using System.Xml;
+
+private void LoadPluginUI(string pluginXamlPath)
+{
+    try
+    {
+        // Read the XAML file
+        var xamlContent = System.IO.File.ReadAllText(pluginXamlPath);
+
+        // Parse the XAML into a WPF UIElement
+        var stringReader = new System.IO.StringReader(xamlContent);
+        var xmlReader = XmlReader.Create(stringReader);
+        var parsedContent = (UIElement)XamlReader.Load(xmlReader);
+
+        // Clear the current panel and add the new content
+        InputFieldsPanel.Children.Clear();
+        InputFieldsPanel.Children.Add(parsedContent);
+
+        MessageBox.Show("Plugin UI loaded successfully!");
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"Error loading plugin UI: {ex.Message}");
+    }
+}
+
+
+
+
+private void OnPluginSelected(string pluginXamlPath)
+{
+    LoadPluginUI(pluginXamlPath);
+}
+
+
+
+
+
+private void VerifyPlugin(object pluginInstance, Type pluginType)
+{
+    try
+    {
+        foreach (var child in InputFieldsPanel.Children)
+        {
+            if (child is TextBox textBox)
+            {
+                // Example: Bind TextBox values to plugin properties
+                var propertyName = textBox.Name; // Ensure the TextBox has a Name matching the property
+                var property = pluginType.GetProperty(propertyName);
+
+                if (property != null)
+                {
+                    var value = Convert.ChangeType(textBox.Text, property.PropertyType);
+                    property.SetValue(pluginInstance, value);
+                }
+            }
+            // Add handling for other control types (e.g., ComboBox, CheckBox) as needed
+        }
+
+        MessageBox.Show("Plugin verified successfully!");
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"Error verifying plugin: {ex.Message}");
+    }
+}
+
+
+
+
+
+
+
+
+private void ExecutePluginMethods(object pluginInstance, Type pluginType)
+{
+    foreach (var method in pluginType.GetMethods(BindingFlags.Public | BindingFlags.Instance))
+    {
+        try
+        {
+            if (method.GetParameters().Length == 0)
+            {
+                // Execute parameterless methods
+                var result = method.Invoke(pluginInstance, null);
+                MessageBox.Show($"{method.Name} executed: {result}");
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error executing method {method.Name}: {ex.Message}");
+        }
+    }
+}
