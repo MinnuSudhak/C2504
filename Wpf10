@@ -92,3 +92,31 @@ private void ExecutePluginMethods(object pluginInstance, Type pluginType)
         }
     }
 }
+
+
+
+
+
+
+
+private void VerifyButton_Click(object sender, RoutedEventArgs e)
+{
+    // Example: Get the selected plugin instance and type
+    var pluginInstance = GetSelectedPluginInstance();
+    var pluginType = pluginInstance.GetType();
+
+    VerifyPlugin(pluginInstance, pluginType);
+}
+
+
+
+
+
+private void ExecuteButton_Click(object sender, RoutedEventArgs e)
+{
+    var pluginInstance = GetSelectedPluginInstance();
+    var pluginType = pluginInstance.GetType();
+
+    ExecutePluginMethods(pluginInstance, pluginType);
+}
+
