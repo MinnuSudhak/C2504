@@ -1,0 +1,214 @@
+using Microsoft.Win32;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Interop;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+
+namespace PluginCreatorFeasibility
+{
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        private TemplateCreationManager _templateCreationManager;
+        private DisplayImage _displayImage;
+        Window imageWindow;
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            // CreateEnvVariable();
+            _templateCreationManager = new TemplateCreationManager();
+            _displayImage = new DisplayImage();
+            LoadPluginNamesFromFolders();
+        }
+        private string pluginFolder = @"C:\PluginCreatorFeasibility\Process\ip"; // Path to your ImageProcess folder
+        private void _imageWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            _displayImage.SetUpDisplay(new WindowInteropHelper(imageWindow).Handle);
+        }
+
+        private void CreateProject_Click(object sender, RoutedEventArgs e)
+        {
+            string result = _templateCreationManager.CreateProject(prj_textbox.Text);
+            if (string.IsNullOrEmpty(result))
+            {
+                MessageBox.Show($"{prj_textbox.Text} Project Created");
+            }
+            else
+            {
+                MessageBox.Show($"{prj_textbox.Text} {result}");
+            }
+        }
+
+        private void ImagePathBrowse_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog folderBrowser = new OpenFileDialog();
+            // Set validate names and check file exists to false otherwise windows will
+            // not let you select "Folder Selection."
+            folderBrowser.ValidateNames = false;
+            folderBrowser.CheckFileExists = false;
+            folderBrowser.CheckPathExists = true;
+            folderBrowser.Filter = $"Raw Files| *.raw";
+            // Always default to Folder Selection.
+            folderBrowser.FileName = "Folder Selection.";
+            if (folderBrowser.ShowDialog() == true)
+            {
+                imagePath.Text = folderBrowser.FileName;
+            }
+        }
+
+        private void LoadImage_Click(object sender, RoutedEventArgs e)
+        {
+            _displayImage.LoadImage(imagePath.Text);
+            //DisplayImage(imagePath.Text);
+        }
+
+        private void SetParentWindowSettings()
+        {
+            imageWindow = new Window();
+            imageWindow.ResizeMode = System.Windows.ResizeMode.NoResize;
+            imageWindow.WindowState = System.Windows.WindowState.Normal;
+            imageWindow.WindowStyle = System.Windows.WindowStyle.None;
+            imageWindow.Owner = this;
+            imageWindow.Left = this.Left + 435;
+            imageWindow.Top = this.Top + 85;
+            imageWindow.Name = "ImageWindow";
+            imageWindow.Title = "ImageWindow";
+            imageWindow.Background = Brushes.Transparent;
+            imageWindow.Height = 700;
+            imageWindow.Width = 700;
+            imageWindow.Loaded += _imageWindow_Loaded;
+            imageWindow.Activate();
+            imageWindow.Show();
+        }
+
+        private void PluginExecution_PreviewMouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (null == imageWindow)
+            {
+                SetParentWindowSettings();
+            }
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            if (null != imageWindow && imageWindow.ShowActivated)
+            {
+                imageWindow.Close();
+            }
+        }
+
+        private void PluginCreation_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (null != imageWindow)
+            {
+                imageWindow.Close();
+                imageWindow = null;
+            }
+        }
+
+        private void CreateEnvVariable()
+        {
+            string envName = "PLUGIN_CREATOR";
+            string envValue = @"C:\PluginCreatorFeasibility";
+
+            if (null == Environment.GetEnvironmentVariable(envName, EnvironmentVariableTarget.User) ||
+                null == Environment.GetEnvironmentVariable(envName, EnvironmentVariableTarget.Machine))
+            {
+                Environment.SetEnvironmentVariable(envName, envValue, EnvironmentVariableTarget.User);
+                Environment.SetEnvironmentVariable(envName, envValue, EnvironmentVariableTarget.Machine);
+            }
+        }
+        private void LoadPluginNamesFromFolders()
+        {
+            try
+            {
+                if (!Directory.Exists(pluginFolder))
+                {
+                    MessageBox.Show($"Plugin folder not found: {pluginFolder}");
+                    return;
+                }
+
+                // Get all subdirectories in the ImageProcess folder
+                var pluginDirectories = Directory.GetDirectories(pluginFolder);
+                var pluginNames = pluginDirectories.Select(dir => new DirectoryInfo(dir).Name).ToList();
+                PluginComboBox.ItemsSource = pluginNames;
+
+
+                // Populate ComboBox with plugin names
+                PluginComboBox.ItemsSource = pluginNames;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading plugins: {ex.Message}");
+            }
+        }
+
+        private void PluginComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+            if (PluginComboBox.SelectedItem == null) return;
+
+            string selectedPluginName = PluginComboBox.SelectedItem.ToString();
+            string pluginPath = Path.Combine(pluginFolder, selectedPluginName, "Process", "ip", $"{selectedPluginName}.gui");
+
+            if (!File.Exists(pluginPath))
+            {
+                MessageBox.Show($"{pluginPath}  for {selectedPluginName} not found.");
+                return;
+            }
+
+            try
+            {
+                // Load the plugin assembly
+                var assembly = Assembly.LoadFrom(pluginPath);
+                var pluginType = assembly.GetTypes().FirstOrDefault();
+
+                if (pluginType != null)
+                {
+                    // Generate input fields for all public properties
+                    var properties = pluginType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                    InputFieldsPanel.Children.Clear();
+
+                    foreach (var property in properties)
+                    {
+                        var stackPanel = new StackPanel { Orientation = Orientation.Horizontal };
+
+                        // Label for property name
+                        stackPanel.Children.Add(new TextBlock
+                        {
+                            Text = property.Name,
+                            Margin = new Thickness(5)
+                        });
+
+                        // TextBox for input
+                        stackPanel.Children.Add(new TextBox
+                        {
+                            Name = property.Name,
+                            Width = 150,
+                            Margin = new Thickness(5)
+                        });
+
+                        InputFieldsPanel.Children.Add(stackPanel);
+                    }
+
+                    // Store the plugin type for method execution
+                    InputFieldsPanel.Tag = pluginType;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading plugin: {ex.Message}");
+            }
+        }
+    }
+}
