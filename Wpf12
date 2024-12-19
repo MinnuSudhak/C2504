@@ -1,0 +1,63 @@
+private void PluginComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+{
+    if (PluginComboBox.SelectedItem == null) return;
+
+    string selectedPluginName = PluginComboBox.SelectedItem.ToString();
+    string xamlPath = Path.Combine(pluginFolder, selectedPluginName, $"{selectedPluginName}.xaml");
+
+    if (!File.Exists(xamlPath))
+    {
+        MessageBox.Show($"XAML file for {selectedPluginName} not found.");
+        return;
+    }
+
+    try
+    {
+        // Clear existing input fields
+        InputFieldsPanel.Children.Clear();
+
+        // Load and parse the XAML file
+        using (FileStream fs = new FileStream(xamlPath, FileMode.Open, FileAccess.Read))
+        {
+            var loadedContent = System.Windows.Markup.XamlReader.Load(fs) as FrameworkElement;
+
+            if (loadedContent != null)
+            {
+                // Add the parsed XAML content to the InputFieldsPanel
+                InputFieldsPanel.Children.Add(loadedContent);
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"Error loading XAML: {ex.Message}");
+    }
+}
+
+
+
+
+private void VerifyPlugin_Click(object sender, RoutedEventArgs e)
+{
+    if (PluginComboBox.SelectedItem == null)
+    {
+        MessageBox.Show("Please select a plugin.");
+        return;
+    }
+
+    var inputValues = new Dictionary<string, string>();
+
+    foreach (var child in InputFieldsPanel.Children.OfType<FrameworkElement>())
+    {
+        if (child is TextBox textBox)
+        {
+            inputValues[textBox.Name] = textBox.Text;
+        }
+        else if (child is ComboBox comboBox)
+        {
+            inputValues[comboBox.Name] = comboBox.SelectedItem?.ToString() ?? string.Empty;
+        }
+    }
+
+    MessageBox.Show($"Collected Inputs: {string.Join(", ", inputValues.Select(kvp => $"{kvp.Key}: {kvp.Value}"))}");
+}
