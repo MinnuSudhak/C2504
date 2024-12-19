@@ -545,3 +545,57 @@ private void VerifyPlugin_Click(object sender, RoutedEventArgs e)
     }
 }
 
+
+
+
+
+
+
+
+private void ExecutePluginLogic(object pluginInstance, Type pluginType)
+{
+    try
+    {
+        var resultWindow = new Window
+        {
+            Title = "Plugin Execution Results",
+            Width = 400,
+            Height = 300,
+            Content = new StackPanel()
+        };
+
+        var resultPanel = resultWindow.Content as StackPanel;
+
+        foreach (var method in pluginType.GetMethods(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (method.GetParameters().Length == 0) // Only execute parameterless methods
+            {
+                try
+                {
+                    var result = method.Invoke(pluginInstance, null);
+                    resultPanel.Children.Add(new TextBlock
+                    {
+                        Text = $"{method.Name}: {result}",
+                        Margin = new Thickness(5)
+                    });
+                }
+                catch (Exception ex)
+                {
+                    resultPanel.Children.Add(new TextBlock
+                    {
+                        Text = $"{method.Name}: Error - {ex.Message}",
+                        Margin = new Thickness(5),
+                        Foreground = System.Windows.Media.Brushes.Red
+                    });
+                }
+            }
+        }
+
+        resultWindow.Show();
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"Error executing plugin logic: {ex.Message}");
+    }
+}
+
