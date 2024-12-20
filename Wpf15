@@ -1,0 +1,103 @@
+private void PluginComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+{
+    if (PluginComboBox.SelectedItem == null) return;
+
+    string selectedPluginName = PluginComboBox.SelectedItem.ToString();
+    string guiFilePath = Path.Combine(pluginFolder, selectedPluginName, $"{selectedPluginName}.gui");
+
+    if (!File.Exists(guiFilePath))
+    {
+        MessageBox.Show($"GUI file for {selectedPluginName} not found at: {guiFilePath}");
+        return;
+    }
+
+    try
+    {
+        // Read and parse the .gui file
+        var lines = File.ReadAllLines(guiFilePath);
+
+        // Clear the existing UI
+        InputFieldsPanel.Children.Clear();
+
+        foreach (var line in lines)
+        {
+            // Parse the line into key-value pairs
+            var properties = ParseGuiLine(line);
+
+            // Create the UI element based on the properties
+            var uiElement = CreateUIElementFromProperties(properties);
+
+            if (uiElement != null)
+            {
+                InputFieldsPanel.Children.Add(uiElement);
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"Error loading GUI: {ex.Message}");
+    }
+}
+
+
+
+
+
+private Dictionary<string, string> ParseGuiLine(string line)
+{
+    var properties = new Dictionary<string, string>();
+
+    var parts = line.Split('|');
+    foreach (var part in parts)
+    {
+        var keyValue = part.Split(':');
+        if (keyValue.Length == 2)
+        {
+            properties[keyValue[0]] = keyValue[1];
+        }
+    }
+
+    return properties;
+}
+
+
+
+
+
+
+private UIElement CreateUIElementFromProperties(Dictionary<string, string> properties)
+{
+    if (!properties.ContainsKey("ControlType")) return null;
+
+    string controlType = properties["ControlType"];
+    switch (controlType)
+    {
+        case "Label":
+            return new TextBlock
+            {
+                Text = properties.ContainsKey("Content") ? properties["Content"] : "",
+                Margin = properties.ContainsKey("Margin") ? new Thickness(double.Parse(properties["Margin"])) : new Thickness(0)
+            };
+
+        case "TextBox":
+            return new TextBox
+            {
+                Name = properties.ContainsKey("Name") ? properties["Name"] : "",
+                Width = properties.ContainsKey("Width") ? double.Parse(properties["Width"]) : 100,
+                Margin = properties.ContainsKey("Margin") ? new Thickness(double.Parse(properties["Margin"])) : new Thickness(0)
+            };
+
+        case "Button":
+            var button = new Button
+            {
+                Content = properties.ContainsKey("Content") ? properties["Content"] : "",
+                Width = properties.ContainsKey("Width") ? double.Parse(properties["Width"]) : 100,
+                Margin = properties.ContainsKey("Margin") ? new Thickness(double.Parse(properties["Margin"])) : new Thickness(0)
+            };
+            button.Click += (s, e) => MessageBox.Show($"{properties["Content"]} button clicked!");
+            return button;
+
+        default:
+            return null;
+    }
+}
